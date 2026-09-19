@@ -11,8 +11,10 @@ import {
   Calendar,
   Clock,
   Heart,
-  Plus,
-  CheckCircle2
+  Plus, 
+  CheckCircle2,
+  Maximize,
+  Minimize
 } from 'lucide-react';
 import { CityInfo, TextSize, ThemeConfig, CommunityEvent, ToolLoan } from '../types';
 import { EMERGENCY_CONTACTS } from '../data/mockData';
@@ -35,6 +37,8 @@ interface SeniorHomeViewProps {
   onMarkAsReturned: (loanId: string) => void;
   onSendReminder: (loanId: string) => void;
   onSelectInitiative?: (id: string) => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
@@ -52,6 +56,8 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
   onOpenReceipt,
   onMarkAsReturned,
   onSendReminder,
+  isFullscreen = false,
+  onToggleFullscreen,
 }) => {
   const isGold = themeConfig.themeId === 'gold-white' || themeConfig.themeId === 'gold-dark';
   const isDark = themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark';
@@ -102,17 +108,42 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={() => speakText(`Bonjour Jean. Bienvenue à La Grande-Motte dans le quartier du Couchant. Douze voisins sont connectés pour vous aider. Si vous avez besoin d'aide ou d'une urgence, tout est écrit en grand ci-dessous.`)}
-          className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-black text-xs sm:text-base cursor-pointer transition shadow-xs w-full sm:w-auto border-2 flex-shrink-0 ${
-            isGold 
-              ? 'bg-amber-100/80 border-amber-400 text-amber-950 hover:bg-amber-200' 
-              : 'bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900'
-          }`}
-        >
-          <Volume2 className="w-5 h-5 text-orange-600 flex-shrink-0" />
-          <span>Écouter l'accueil à voix haute</span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto flex-shrink-0">
+          <button
+            onClick={() => speakText(`Bonjour Jean. Bienvenue à La Grande-Motte dans le quartier du Couchant. Douze voisins sont connectés pour vous aider. Si vous avez besoin d'aide ou d'une urgence, tout est écrit en grand ci-dessous.`)}
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-black text-xs sm:text-base cursor-pointer transition shadow-xs border-2 ${
+              isGold 
+                ? 'bg-amber-100/80 border-amber-400 text-amber-950 hover:bg-amber-200' 
+                : 'bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900'
+            }`}
+          >
+            <Volume2 className="w-5 h-5 text-orange-600 flex-shrink-0" />
+            <span>Écouter</span>
+          </button>
+
+          {onToggleFullscreen && (
+            <button
+              onClick={onToggleFullscreen}
+              className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-black text-xs sm:text-base cursor-pointer transition shadow-xs border-2 active:scale-95 ${
+                isFullscreen
+                  ? 'bg-amber-500 text-stone-950 border-amber-600 shadow-md ring-2 ring-amber-300'
+                  : isGold
+                  ? 'bg-amber-100/80 border-amber-400 text-amber-950 hover:bg-amber-200'
+                  : isDark
+                  ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
+                  : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-800'
+              }`}
+              title={isFullscreen ? "Quitter le plein écran (Touche Échap)" : "Afficher en plein écran pour un grand confort visuel (Touche F)"}
+            >
+              {isFullscreen ? (
+                <Minimize className="w-5 h-5 text-stone-950 flex-shrink-0" />
+              ) : (
+                <Maximize className="w-5 h-5 text-amber-600 flex-shrink-0" />
+              )}
+              <span>{isFullscreen ? 'Quitter Plein Écran' : 'Plein Écran'}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 3 Giant Action Cards for Seniors */}
@@ -196,48 +227,6 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
             <span className="text-xl sm:text-2xl">➔</span>
           </div>
         </div>
-      </div>
-
-      {/* QUICK BANNER: Prêter un outil en confiance */}
-      <div 
-        onClick={onOpenNewLoanModal}
-        className={`rounded-3xl p-5 sm:p-6 border-3 cursor-pointer transition transform hover:-translate-y-0.5 active:scale-99 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-          isGold
-            ? 'bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 border-amber-400 text-stone-900 shadow-gold'
-            : isDark
-            ? 'bg-stone-900 border-amber-500 text-white'
-            : 'bg-gradient-to-r from-amber-50 via-white to-amber-50 border-amber-300 text-stone-900'
-        }`}
-      >
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-amber-500 text-stone-950 flex items-center justify-center text-3xl sm:text-4xl shadow-md flex-shrink-0">
-            🧰
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="bg-amber-600 text-white text-[11px] font-black uppercase tracking-wide px-2.5 py-0.5 rounded-full">
-                Prêt & Trace Sécurisée
-              </span>
-              <span className="text-xs text-amber-900 font-extrabold">
-                {toolLoans.filter(l => l.status === 'en_cours').length} prêt(s) en cours
-              </span>
-            </div>
-            <h3 className="text-lg sm:text-2xl font-black text-stone-900 leading-tight">
-              Prêter un outil à un jeune voisin
-            </h3>
-            <p className="text-xs sm:text-sm text-stone-600 font-medium mt-0.5">
-              Perceuse, échelle, taille-haie : générez un reçu officiel par SMS en 3 clics avec suivi de restitution garanti.
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="bg-amber-500 hover:bg-amber-600 text-stone-950 font-black px-5 py-3 rounded-2xl text-xs sm:text-sm shadow-sm flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
-        >
-          <span>+ Prêter un outil maintenant</span>
-          <span className="text-base">➔</span>
-        </button>
       </div>
 
       {/* SECTION: GESTION & TRACE DES PRÊTS D'OUTILS */}
@@ -375,35 +364,35 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
         </div>
       </div>
 
-      {/* Mes Voisins de Confiance */}
-      <div className={`rounded-3xl p-6 sm:p-8 border-2 transition-all ${
+      {/* Mes Voisins de Confiance (Compact) */}
+      <div className={`rounded-2xl p-4 sm:p-5 border-2 transition-all mt-4 ${
         themeConfig.themeId === 'gold-white'
           ? 'bg-white border-amber-300 shadow-gold'
           : themeConfig.themeId === 'gold-dark'
-          ? 'bg-stone-900 border-amber-500 shadow-gold-lg text-white'
+          ? 'bg-stone-900 border-amber-500 shadow-gold text-white'
           : themeConfig.themeId === 'dark'
           ? 'bg-slate-900 border-slate-700 text-white'
           : 'bg-white border-slate-200 shadow-xs'
       }`}>
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🤝</span>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl sm:text-2xl">🤝</span>
             <div>
-              <h3 className={`font-black ${cardTitleClass} ${isGold ? 'text-gold-gradient' : ''}`}>
+              <h3 className={`font-black text-base sm:text-lg ${isGold ? 'text-gold-gradient' : ''}`}>
                 Mes Voisins de Confiance ({currentCity.name})
               </h3>
-              <p className={`font-medium ${bodyScaleClass} ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Bénévoles certifiés et vérifiés disponibles par téléphone ou visite.
+              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'} font-medium`}>
+                Bénévoles certifiés disponibles par téléphone ou visite.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {EMERGENCY_CONTACTS.slice(3, 6).map((contact) => (
             <div 
               key={contact.id} 
-              className={`p-5 rounded-2xl border-2 flex flex-col justify-between transition ${
+              className={`p-3 rounded-xl border-2 flex items-center justify-between gap-2.5 transition ${
                 isGold 
                   ? 'bg-amber-50/50 border-amber-300' 
                   : isDark 
@@ -411,34 +400,35 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
                   : 'bg-slate-50 border-slate-200 hover:border-orange-300'
               }`}
             >
-              <div className="flex items-start gap-3.5">
-                <span className="text-4xl p-2.5 bg-white rounded-2xl shadow-xs">{contact.avatar}</span>
-                <div>
-                  <h4 className={`font-black text-base sm:text-lg ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="text-2xl sm:text-3xl p-1.5 bg-white rounded-xl shadow-2xs flex-shrink-0">{contact.avatar}</span>
+                <div className="min-w-0">
+                  <h4 className={`font-black text-xs sm:text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {contact.name}
                   </h4>
-                  <p className="text-xs sm:text-sm text-slate-500 font-bold">{contact.role}</p>
+                  <p className="text-[11px] text-slate-500 font-bold truncate">{contact.role}</p>
                   {contact.distance && (
-                    <span className="inline-block mt-1 bg-emerald-100 text-emerald-800 text-xs font-black px-2.5 py-0.5 rounded-full">
-                      📍 à {contact.distance}
+                    <span className="inline-block text-[10px] text-emerald-800 font-black bg-emerald-100 px-1.5 py-0.2 rounded">
+                      📍 {contact.distance}
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <button
                   onClick={() => speakText(`Contact : ${contact.name}, ${contact.role}. Numéro : ${contact.phone}`)}
-                  className="p-2 text-slate-600 hover:text-orange-600 rounded-xl hover:bg-white transition"
+                  className="p-1.5 text-slate-600 hover:text-orange-600 rounded-lg hover:bg-white transition"
                   title="Écouter le contact"
                 >
-                  <Volume2 className="w-5 h-5 text-orange-600" />
+                  <Volume2 className="w-4 h-4 text-orange-600" />
                 </button>
                 <a
                   href={`tel:${contact.phone.replace(/\s+/g, '')}`}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-2xs"
+                  title={`Appeler ${contact.name}`}
                 >
-                  <Phone className="w-4 h-4" />
+                  <Phone className="w-3.5 h-3.5" />
                   <span>Appeler</span>
                 </a>
               </div>

@@ -191,88 +191,88 @@ export const VideoAudioRequestModal: React.FC<VideoAudioRequestModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
       <div 
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[92vh]"
+        className="w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[96vh] sm:max-h-[92vh] my-auto"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-4 sm:p-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-white">
-              <Camera className="w-6 h-6" />
+        <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-3.5 py-2.5 sm:p-5 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white/20 flex items-center justify-center text-white flex-shrink-0">
+              <Camera className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black font-['Outfit']">
+              <h2 className="text-base sm:text-2xl font-black font-['Outfit'] leading-tight">
                 J'ai besoin d'un coup de main
               </h2>
-              <p className="text-xs sm:text-sm text-orange-100 font-medium">
+              <p className="text-[11px] sm:text-sm text-orange-100 font-medium line-clamp-1">
                 {cityName} · Envoyez votre demande par vidéo, par la voix ou en 1 clic
               </p>
             </div>
           </div>
           <button
             onClick={() => { stopCamera(); onClose(); }}
-            className="w-10 h-10 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition cursor-pointer"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition cursor-pointer flex-shrink-0"
             aria-label="Fermer"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
         {/* Tab switchers */}
-        <div className="flex border-b border-slate-200 bg-slate-50 p-2 gap-2">
+        <div className="flex border-b border-slate-200 bg-slate-50 p-1.5 sm:p-2 gap-1.5 sm:gap-2 flex-shrink-0">
           <button
             onClick={() => setActiveTab('video')}
-            className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer ${
+            className={`flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition cursor-pointer ${
               activeTab === 'video'
                 ? 'bg-white text-orange-600 shadow-sm border border-slate-200'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Video className="w-4 h-4" />
-            <span>Message Vidéo</span>
+            <Video className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Message Vidéo</span>
           </button>
 
           <button
             onClick={() => setActiveTab('voice')}
-            className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer ${
+            className={`flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition cursor-pointer ${
               activeTab === 'voice'
                 ? 'bg-white text-orange-600 shadow-sm border border-slate-200'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Mic className="w-4 h-4" />
-            <span>Parler (Microphone)</span>
+            <Mic className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Parler (Microphone)</span>
           </button>
 
           <button
             onClick={() => setActiveTab('presets')}
-            className={`flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer ${
+            className={`flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition cursor-pointer ${
               activeTab === 'presets'
                 ? 'bg-white text-orange-600 shadow-sm border border-slate-200'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Besoins Rapides (1 Clic)</span>
+            <Sparkles className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Besoins Rapides (1 Clic)</span>
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
+        <div className="p-3 sm:p-6 overflow-y-auto space-y-3">
           {/* TAB 1: VIDEO */}
           {activeTab === 'video' && (
-            <div className="space-y-4">
-              <div className="bg-slate-950 rounded-2xl overflow-hidden aspect-video relative flex items-center justify-center border-2 border-slate-800 shadow-inner">
+            <div className="space-y-3">
+              <div className="bg-slate-950 rounded-2xl overflow-hidden aspect-video relative flex items-center justify-center border-2 border-slate-800 shadow-inner max-h-[30vh] sm:max-h-[44vh] w-full max-w-xl mx-auto">
                 {cameraError ? (
-                  <div className="text-center p-6 text-white max-w-sm">
-                    <AlertCircle className="w-10 h-10 text-amber-400 mx-auto mb-2" />
-                    <p className="text-sm font-medium">{cameraError}</p>
+                  <div className="text-center p-4 text-white max-w-sm">
+                    <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-1.5" />
+                    <p className="text-xs sm:text-sm font-medium">{cameraError}</p>
                     <button
                       onClick={() => setActiveTab('voice')}
-                      className="mt-3 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2 rounded-xl"
+                      className="mt-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl cursor-pointer"
                     >
                       Utiliser la dictée vocale à la place
                     </button>
@@ -282,7 +282,7 @@ export const VideoAudioRequestModal: React.FC<VideoAudioRequestModalProps> = ({
                     src={recordedVideoUrl}
                     controls
                     autoPlay
-                    className="w-full h-full object-contain"
+                    className="w-full h-full max-h-[30vh] sm:max-h-[44vh] object-contain"
                   />
                 ) : (
                   <>
@@ -290,11 +290,11 @@ export const VideoAudioRequestModal: React.FC<VideoAudioRequestModalProps> = ({
                       ref={videoPreviewRef}
                       playsInline
                       muted
-                      className="w-full h-full object-cover scale-x-[-1]"
+                      className="w-full h-full max-h-[30vh] sm:max-h-[44vh] object-cover scale-x-[-1]"
                     />
                     {isRecording && (
-                      <div className="absolute top-4 left-4 bg-red-600 text-white font-extrabold px-3 py-1 rounded-full text-xs flex items-center gap-2 shadow-lg animate-pulse">
-                        <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
+                      <div className="absolute top-2.5 left-2.5 bg-red-600 text-white font-extrabold px-2.5 py-1 rounded-full text-xs flex items-center gap-1.5 shadow-lg animate-pulse">
+                        <span className="w-2 h-2 rounded-full bg-white animate-ping" />
                         <span>REC 00:{recordSeconds.toString().padStart(2, '0')} (max 60s)</span>
                       </div>
                     )}
@@ -302,48 +302,48 @@ export const VideoAudioRequestModal: React.FC<VideoAudioRequestModalProps> = ({
                 )}
               </div>
 
-              {/* Video Controls */}
+              {/* Video Controls - ALWAYS VISIBLE, STICKY & ACCESSIBLE */}
               {!cameraError && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <div className="sticky bottom-0 bg-white/95 backdrop-blur-xs pt-2 pb-1 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 z-10">
                   {!recordedVideoUrl ? (
                     !isRecording ? (
                       <button
                         id="btn-start-record-video"
                         onClick={handleStartRecording}
-                        className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-black px-6 py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-base"
+                        className="w-full sm:w-auto bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black px-5 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base flex-shrink-0"
                       >
-                        <span className="w-3.5 h-3.5 rounded-full bg-white" />
+                        <span className="w-3.5 h-3.5 rounded-full bg-white animate-pulse" />
                         <span>Enregistrer mon message vidéo</span>
                       </button>
                     ) : (
                       <button
                         id="btn-stop-record-video"
                         onClick={handleStopRecording}
-                        className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-black px-6 py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer text-base"
+                        className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-black px-5 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base flex-shrink-0"
                       >
                         <Square className="w-4 h-4 fill-white" />
-                        <span>Terminer l'enregistrement</span>
+                        <span>Terminer l'enregistrement (00:{recordSeconds.toString().padStart(2, '0')})</span>
                       </button>
                     )
                   ) : (
-                    <div className="flex w-full gap-3">
+                    <div className="flex w-full gap-2.5">
                       <button
                         onClick={handleResetRecording}
-                        className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl text-sm"
+                        className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 px-3 rounded-xl text-xs sm:text-sm cursor-pointer"
                       >
                         Recommencer
                       </button>
                       <button
                         onClick={() => handleSubmit('Message Vidéo d\'un Aîné', 'Message vidéo enregistré pour les voisins du quartier.', 'entraide')}
-                        className="flex-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 px-4 rounded-xl text-base flex items-center justify-center gap-2 shadow-md shadow-emerald-600/30"
+                        className="flex-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black py-2.5 px-4 rounded-xl text-xs sm:text-base flex items-center justify-center gap-2 shadow-md shadow-emerald-600/30 cursor-pointer"
                       >
-                        <Send className="w-5 h-5" />
+                        <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span>Envoyer la vidéo aux voisins</span>
                       </button>
                     </div>
                   )}
 
-                  <p className="text-xs text-slate-500 text-center sm:text-right">
+                  <p className="text-[11px] sm:text-xs text-slate-500 text-center sm:text-right font-medium">
                     Expliquez calmement ce dont vous avez besoin. Vos voisins bienveillants vous répondront rapidement.
                   </p>
                 </div>

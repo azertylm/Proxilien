@@ -13,7 +13,9 @@ import {
   Palette,
   Sun,
   Moon,
-  Crown
+  Crown,
+  Maximize,
+  Minimize
 } from 'lucide-react';
 import { speakText, stopSpeaking } from '../utils/speech';
 
@@ -30,6 +32,8 @@ interface HeaderProps {
   themeConfig: ThemeConfig;
   onOpenThemeCustomizer: () => void;
   onQuickToggleTheme: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -45,6 +49,8 @@ export const Header: React.FC<HeaderProps> = ({
   themeConfig,
   onOpenThemeCustomizer,
   onQuickToggleTheme,
+  isFullscreen = false,
+  onToggleFullscreen,
 }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -262,6 +268,32 @@ export const Header: React.FC<HeaderProps> = ({
                 {textSize === 'large' ? 'A' : textSize === 'xlarge' ? 'A+' : 'A++'}
               </span>
             </button>
+
+            {/* Fullscreen Mode Button */}
+            {onToggleFullscreen && (
+              <button
+                id="btn-header-fullscreen"
+                onClick={onToggleFullscreen}
+                className={`p-2 sm:px-2.5 sm:py-2 rounded-xl border flex items-center gap-1.5 text-xs font-black transition cursor-pointer active:scale-95 ${
+                  isFullscreen
+                    ? 'bg-amber-500 text-stone-950 border-amber-600 shadow-md ring-2 ring-amber-300'
+                    : isDark
+                    ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
+                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+                title={isFullscreen ? "Quitter le plein écran (Touche Échap ou F)" : "Activer le mode plein écran (Grand confort visuel, Touche F)"}
+                aria-label={isFullscreen ? "Quitter le mode plein écran" : "Activer le mode plein écran"}
+              >
+                {isFullscreen ? (
+                  <Minimize className="w-4 h-4 text-stone-950 flex-shrink-0" />
+                ) : (
+                  <Maximize className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                )}
+                <span className="hidden sm:inline">
+                  {isFullscreen ? 'Normal' : 'Plein Écran'}
+                </span>
+              </button>
+            )}
 
             {/* Direct SOS Button in Header */}
             <button

@@ -52,7 +52,7 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
   };
 
   return (
-    <div className={`rounded-3xl p-4 sm:p-7 border-2 transition-all w-full max-w-full overflow-hidden ${
+    <div className={`rounded-2xl p-3.5 sm:p-5 border-2 transition-all w-full max-w-full overflow-hidden mt-4 ${
       themeConfig.themeId === 'gold-white'
         ? 'bg-white border-amber-300 shadow-gold'
         : themeConfig.themeId === 'gold-dark'
@@ -64,10 +64,10 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
         : 'bg-white border-slate-200 shadow-xs'
     }`}>
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-stone-200 pb-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black uppercase px-3 py-0.5 rounded-full flex items-center gap-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
               Traçabilité & Tranquillité d'esprit
             </span>
@@ -76,13 +76,13 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
             </span>
           </div>
 
-          <h2 className={`text-xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5 ${
+          <h2 className={`text-lg sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
             isGold ? 'text-gold-gradient' : 'text-stone-900'
           }`}>
             <span>🤝 Prêt d'outils en Confiance</span>
           </h2>
-          <p className="text-xs sm:text-sm text-stone-600 font-medium mt-1">
-            Prêtez votre matériel (bricolage, jardin, cuisine) à un jeune voisin avec un reçu numérique, rappel automatique et suivi officiel.
+          <p className="text-xs text-stone-600 font-medium mt-0.5">
+            Prêtez votre matériel à un jeune voisin avec reçu numérique SMS et suivi officiel.
           </p>
         </div>
 
@@ -90,25 +90,25 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={handleReadSummary}
-            className="p-2.5 sm:px-3 sm:py-2 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1.5 text-xs font-bold transition cursor-pointer"
+            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1 text-xs font-bold transition cursor-pointer"
             title="Écouter l'état des prêts"
           >
-            <Volume2 className="w-4 h-4 text-orange-600 flex-shrink-0" />
+            <Volume2 className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
             <span className="hidden sm:inline">Écouter</span>
           </button>
 
           <button
             onClick={onOpenNewLoanModal}
-            className="py-3 px-4 sm:px-5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black rounded-2xl text-xs sm:text-sm shadow-md flex items-center gap-2 transition cursor-pointer active:scale-98"
+            className="py-2 px-3 sm:px-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black rounded-xl text-xs sm:text-sm shadow-sm flex items-center gap-1.5 transition cursor-pointer active:scale-98"
           >
             <Plus className="w-4 h-4 text-stone-950 stroke-[3]" />
-            <span>Prêter un outil (3 clics)</span>
+            <span>Prêter un outil</span>
           </button>
         </div>
       </div>
 
       {/* Tabs Filter: En cours vs Historique */}
-      <div className="flex items-center gap-2 my-4">
+      <div className="flex items-center gap-2 my-3">
         <button
           onClick={() => setActiveTab('actifs')}
           className={`py-2 px-3.5 rounded-xl font-black text-xs sm:text-sm flex items-center gap-1.5 transition cursor-pointer ${

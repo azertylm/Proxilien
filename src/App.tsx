@@ -15,6 +15,8 @@ import { OrganizeEventModal } from './components/OrganizeEventModal';
 import { CommunityEventsSection } from './components/CommunityEventsSection';
 import { NewToolLoanModal } from './components/NewToolLoanModal';
 import { ToolReceiptModal } from './components/ToolReceiptModal';
+import { FullscreenBanner } from './components/FullscreenBanner';
+import { useFullscreen } from './hooks/useFullscreen';
 import { 
   Home, 
   Sparkles, 
@@ -31,6 +33,9 @@ export default function App() {
   const [userMode, setUserMode] = useState<UserMode>('senior');
   const [activeTab, setActiveTab] = useState<'accueil' | 'evenements' | 'village'>('accueil');
   const [selectedVillageCategory, setSelectedVillageCategory] = useState<string | undefined>(undefined);
+
+  // Fullscreen controller (native and immersive fallback)
+  const { isFullscreen, toggleFullscreen, exitFullscreen } = useFullscreen();
 
   // Theme & Readability Customization (Supports requested "belles lettres en or sur fond blanc")
   const [themeConfig, setThemeConfig] = useState<ThemeConfig>({
@@ -206,12 +211,16 @@ export default function App() {
     themeConfig.textSize === 'xlarge' ? 'text-base sm:text-lg' : 
     'text-sm sm:text-base';
 
+  const isAnyModalOpen = isHelpRequestOpen || isSOSOpen || isCitySelectorOpen || isOrganizeModalOpen || isNewToolLoanOpen || Boolean(selectedLoanForReceipt) || isThemeCustomizerOpen;
+
   // If in TV Mode, render Google TV view
   if (userMode === 'tv') {
     return (
-      <div className={`min-h-screen w-full max-w-full overflow-x-hidden bg-slate-950 font-['Outfit'] ${textScaleWrapper}`}>
+      <div className={`min-h-screen w-full max-w-full overflow-x-hidden bg-slate-950 font-['Outfit'] ${textScaleWrapper} ${isFullscreen ? 'fixed inset-0 z-50 overflow-y-auto' : ''}`}>
         <TVModeView
           currentCity={currentCity}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={toggleFullscreen}
           onOpenSOS={() => setIsSOSOpen(true)}
           onOpenHelpRequest={() => setIsHelpRequestOpen(true)}
           onGoToVillage={() => {
@@ -219,6 +228,13 @@ export default function App() {
             setActiveTab('village');
           }}
           onExitTVMode={() => setUserMode('senior')}
+        />
+
+        <FullscreenBanner
+          isFullscreen={isFullscreen}
+          onExit={exitFullscreen}
+          isGold={false}
+          isModalOpen={isAnyModalOpen}
         />
 
         <SOSModal
@@ -238,7 +254,9 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen w-full max-w-full overflow-x-hidden ${rootBgClass} ${fontClass} ${textScaleWrapper} flex flex-col justify-between transition-colors duration-200`}>
+    <div className={`min-h-screen w-full max-w-full overflow-x-hidden ${rootBgClass} ${fontClass} ${textScaleWrapper} flex flex-col justify-between transition-colors duration-200 ${
+      isFullscreen ? 'fixed inset-0 z-40 overflow-y-auto p-0 sm:p-2' : ''
+    }`}>
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-4 z-50 max-w-sm bg-slate-950 text-white p-4 rounded-2xl shadow-2xl border-2 border-amber-400 flex items-start gap-3 animate-in slide-in-from-top-4 duration-200">
@@ -264,6 +282,8 @@ export default function App() {
         themeConfig={themeConfig}
         onOpenThemeCustomizer={() => setIsThemeCustomizerOpen(true)}
         onQuickToggleTheme={handleQuickToggleTheme}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
       />
 
       {/* Main Content Area */}
@@ -343,6 +363,8 @@ export default function App() {
               themeConfig={themeConfig}
               events={communityEvents}
               toolLoans={toolLoans}
+              isFullscreen={isFullscreen}
+              onToggleFullscreen={toggleFullscreen}
               onOpenSOS={() => setIsSOSOpen(true)}
               onOpenHelpRequest={() => setIsHelpRequestOpen(true)}
               onOpenOrganizeModal={() => setIsOrganizeModalOpen(true)}
@@ -441,34 +463,34 @@ export default function App() {
         onSendReminder={handleSendLoanReminder}
       />
 
-      {/* Bottom Footer with Municipal & Senior Care Partnerships */}
-      <footer className={`border-t mt-10 py-6 px-3 text-center text-xs transition-colors w-full max-w-full overflow-hidden ${
+      {/* Bottom Footer with Municipal & Senior Care Partnerships (Ultra-compact) */}
+      <footer className={`border-t mt-3 py-2 px-3 text-center transition-colors w-full max-w-full overflow-hidden ${
         themeConfig.themeId === 'gold-white'
-          ? 'bg-white border-amber-300 text-stone-700'
+          ? 'bg-white/95 border-amber-300 text-stone-700'
           : themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark'
           ? 'bg-slate-900 border-slate-800 text-slate-400'
           : 'bg-white border-slate-200 text-slate-500'
       }`}>
-        <div className="max-w-4xl mx-auto space-y-2">
-          <div className="flex items-center justify-center gap-1.5">
-            <Crown className="w-4 h-4 text-amber-500" />
-            <p className="font-extrabold text-sm sm:text-base">
-              ProxiLien · Ville Pilote : La Grande-Motte (34280)
-            </p>
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 text-xs">
+          <div className="flex items-center gap-1.5">
+            <Crown className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+            <span className="font-extrabold text-stone-800">
+              ProxiLien · {currentCity.name}
+            </span>
+            <span className="hidden sm:inline text-stone-400">|</span>
+            <span className="hidden sm:inline text-stone-500 font-medium">Solidaire & Intergénérationnel</span>
           </div>
-          <p className="font-medium text-xs sm:text-sm">
-            Plateforme solidaire pour et avec les aînés. Accessible sur Smartphone, Tablette, PC et TV.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs font-extrabold">
-            <span>🏛️ Partenariat CCAS</span>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 font-bold text-[11px] sm:text-xs">
+            <span>🏛️ CCAS</span>
             <span>·</span>
-            <span>🚑 SAMU (15)</span>
+            <span>🚑 SAMU 15</span>
             <span>·</span>
             <button 
               onClick={() => setIsThemeCustomizerOpen(true)}
-              className="text-amber-600 hover:underline cursor-pointer flex items-center gap-1 font-black"
+              className="text-amber-600 hover:underline cursor-pointer inline-flex items-center gap-1 font-black"
             >
-              <Palette className="w-3.5 h-3.5" />
+              <Palette className="w-3 h-3" />
               <span>Personnaliser</span>
             </button>
             <span>·</span>
@@ -476,11 +498,19 @@ export default function App() {
               onClick={() => setIsCitySelectorOpen(true)}
               className="text-orange-600 hover:underline cursor-pointer"
             >
-              Autre ville
+              Changer de ville
             </button>
           </div>
         </div>
       </footer>
+
+      {/* Floating Fullscreen Exit HUD */}
+      <FullscreenBanner
+        isFullscreen={isFullscreen}
+        onExit={exitFullscreen}
+        isGold={themeConfig.themeId === 'gold-white' || themeConfig.themeId === 'gold-dark'}
+        isModalOpen={isAnyModalOpen}
+      />
     </div>
   );
 }
