@@ -1,0 +1,12 @@
+{
+  "name": "ProxiLien - La Grande-Motte",
+  "description": "Plateforme intergénérationnelle d'entraide et de lien social entre seniors et jeunes à La Grande-Motte, accessible sur mobile, PC, tablette et TV.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
