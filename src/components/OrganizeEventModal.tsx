@@ -184,6 +184,10 @@ export const OrganizeEventModal: React.FC<OrganizeEventModalProps> = ({
     };
 
     onEventCreated(newEvent);
+    setSelectedTemplate(null);
+    setTitle('');
+    setLocation('');
+    setDescription('');
     onClose();
   };
 
@@ -388,7 +392,7 @@ export const OrganizeEventModal: React.FC<OrganizeEventModalProps> = ({
               className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-extrabold py-3.5 rounded-2xl text-base shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 cursor-pointer transition active:scale-98"
             >
               <Sparkles className="w-5 h-5 text-amber-200" />
-              <span>Publier l'invitation aux voisins 🚀</span>
+              <span>Publier et retourner à l'accueil 🚀</span>
             </button>
             <button
               type="button"

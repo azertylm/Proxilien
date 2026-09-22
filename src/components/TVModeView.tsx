@@ -14,7 +14,8 @@ import {
   Home, 
   Sun,
   Maximize,
-  Minimize
+  Minimize,
+  X
 } from 'lucide-react';
 import { CityInfo } from '../types';
 import { INITIATIVES_50 } from '../data/initiatives';
@@ -121,53 +122,69 @@ export const TVModeView: React.FC<TVModeViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 sm:p-8 flex flex-col justify-between select-none">
+    <div className="min-h-screen bg-slate-950 text-white p-3 sm:p-8 flex flex-col justify-between select-none relative">
+      {/* Bouton croix flottant ultra-visible sur smartphone */}
+      <button
+        id="btn-mobile-floating-exit-tv"
+        onClick={onExitTVMode}
+        className="sm:hidden fixed top-3 right-3 z-50 flex items-center gap-1.5 bg-red-600 hover:bg-red-700 active:scale-90 text-white font-black px-3.5 py-2 rounded-full shadow-2xl border-2 border-white cursor-pointer transition ring-2 ring-red-500/50"
+        title="Quitter le Mode TV et revenir à l'accueil"
+        aria-label="Quitter le Mode TV"
+      >
+        <X className="w-5 h-5 stroke-[3] text-white" />
+        <span className="text-xs font-black tracking-wide uppercase">Quitter TV</span>
+      </button>
+
       {/* Top TV Bar */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-purple-600 flex items-center justify-center text-amber-300 shadow-lg">
-            <Tv className="w-7 h-7" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 sm:pb-4 gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 pr-28 sm:pr-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-purple-600 flex items-center justify-center text-amber-300 shadow-lg flex-shrink-0">
+            <Tv className="w-5 h-5 sm:w-7 sm:h-7" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl font-black font-['Outfit'] text-white">
+              <span className="text-xl sm:text-3xl font-black font-['Outfit'] text-white">
                 ProxiLien <span className="text-orange-500">TV</span>
               </span>
-              <span className="bg-orange-600/30 text-orange-400 border border-orange-500/40 text-xs font-black uppercase px-2.5 py-0.5 rounded-full">
-                Google TV & Grand Écran
+              <span className="bg-orange-600/30 text-orange-400 border border-orange-500/40 text-[10px] sm:text-xs font-black uppercase px-2 py-0.5 rounded-full whitespace-nowrap">
+                Grand Écran
               </span>
             </div>
-            <p className="text-sm text-slate-400 font-semibold">
-              Ville de {currentCity.name} · Utilisez la télécommande (Touches Flèches & OK)
+            <p className="text-xs sm:text-sm text-slate-400 font-semibold truncate">
+              Ville de {currentCity.name} · Utilisez la télécommande ou le tactile
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {onToggleFullscreen && (
             <button
               onClick={onToggleFullscreen}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-950 font-black px-4 py-2.5 rounded-2xl transition shadow-md text-sm cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-stone-950 font-black px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl transition shadow-md text-xs sm:text-sm cursor-pointer active:scale-95"
               title="Basculer le plein écran TV (Touche F)"
             >
-              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-              <span className="hidden sm:inline">{isFullscreen ? 'Quitter Plein Écran' : 'Plein Écran TV'}</span>
+              {isFullscreen ? <Minimize className="w-4 h-4 sm:w-5 sm:h-5" /> : <Maximize className="w-4 h-4 sm:w-5 sm:h-5" />}
+              <span className="hidden md:inline">{isFullscreen ? 'Quitter Plein Écran' : 'Plein Écran TV'}</span>
             </button>
           )}
 
           <button
             onClick={handleReadScreen}
-            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-4 py-2.5 rounded-2xl transition border border-slate-700 text-sm cursor-pointer"
+            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl transition border border-slate-700 text-xs sm:text-sm cursor-pointer"
           >
-            <Volume2 className="w-5 h-5 text-orange-400" />
-            <span className="hidden sm:inline">Écouter à la voix</span>
+            <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" />
+            <span className="hidden md:inline">Écouter à la voix</span>
           </button>
 
+          {/* Bouton Quitter TV avec Croix Rouge Très Visible */}
           <button
+            id="btn-header-exit-tv"
             onClick={onExitTVMode}
-            className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-2xl transition border border-slate-700 text-sm cursor-pointer"
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-500 active:scale-95 text-white font-black px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl transition shadow-lg shadow-red-600/30 border-2 border-red-300 text-xs sm:text-sm cursor-pointer"
+            title="Quitter le Mode Télévision et revenir à ProxiLien standard"
           >
-            Quitter le Mode TV
+            <X className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3] text-white" />
+            <span>Quitter le Mode TV</span>
           </button>
         </div>
       </div>
@@ -233,12 +250,22 @@ export const TVModeView: React.FC<TVModeViewProps> = ({
               <Phone className="w-8 h-8" />
               <span>Vos Voisins de Garde à {currentCity.name}</span>
             </h3>
-            <button
-              onClick={() => setTvSubscreen('home')}
-              className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-sm"
-            >
-              Retour à l'accueil TV
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setTvSubscreen('home')}
+                className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm cursor-pointer"
+              >
+                ← Menu TV
+              </button>
+              <button
+                onClick={onExitTVMode}
+                className="flex items-center gap-1.5 bg-red-600 hover:bg-red-500 text-white font-black px-3.5 py-2 rounded-xl text-xs sm:text-sm shadow-md cursor-pointer border border-red-400"
+                title="Quitter le Mode TV"
+              >
+                <X className="w-4 h-4 stroke-[3]" />
+                <span>Quitter TV</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -321,6 +348,14 @@ export const TVModeView: React.FC<TVModeViewProps> = ({
             title="Bouton Rouge SOS"
           >
             SOS
+          </button>
+          <button
+            onClick={onExitTVMode}
+            className="px-3 py-2.5 bg-slate-800 hover:bg-red-600 active:scale-95 text-slate-200 hover:text-white font-black rounded-xl border border-slate-700 cursor-pointer shadow-md text-xs sm:text-sm flex items-center gap-1 transition"
+            title="Quitter le Mode TV et revenir à l'accueil"
+          >
+            <X className="w-4 h-4 stroke-[3] text-red-400 group-hover:text-white" />
+            <span className="hidden sm:inline">Quitter TV</span>
           </button>
         </div>
       </div>

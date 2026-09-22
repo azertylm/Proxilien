@@ -16,10 +16,11 @@ import {
   Maximize,
   Minimize
 } from 'lucide-react';
-import { CityInfo, TextSize, ThemeConfig, CommunityEvent, ToolLoan } from '../types';
+import { CityInfo, TextSize, ThemeConfig, CommunityEvent, ToolLoan, HelpRequest } from '../types';
 import { EMERGENCY_CONTACTS } from '../data/mockData';
 import { speakText } from '../utils/speech';
 import { ToolLoansSection } from './ToolLoansSection';
+import { SeniorHelpTrackingSection } from './SeniorHelpTrackingSection';
 
 interface SeniorHomeViewProps {
   currentCity: CityInfo;
@@ -27,6 +28,9 @@ interface SeniorHomeViewProps {
   themeConfig: ThemeConfig;
   events: CommunityEvent[];
   toolLoans: ToolLoan[];
+  activeRequests?: HelpRequest[];
+  onConfirmResolvedRequest?: (reqId: string) => void;
+  onSimulateNeighborArrival?: (reqId: string) => void;
   onOpenSOS: () => void;
   onOpenHelpRequest: () => void;
   onGoToVillage: (categoryFilter?: string) => void;
@@ -39,6 +43,8 @@ interface SeniorHomeViewProps {
   onSelectInitiative?: (id: string) => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  onOpenAIAssistant?: () => void;
+  onOpenSovereignStatus?: () => void;
 }
 
 export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
@@ -47,6 +53,9 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
   themeConfig,
   events,
   toolLoans,
+  activeRequests = [],
+  onConfirmResolvedRequest,
+  onSimulateNeighborArrival,
   onOpenSOS,
   onOpenHelpRequest,
   onGoToVillage,
@@ -58,29 +67,146 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
   onSendReminder,
   isFullscreen = false,
   onToggleFullscreen,
+  onOpenAIAssistant,
+  onOpenSovereignStatus,
 }) => {
   const isGold = themeConfig.themeId === 'gold-white' || themeConfig.themeId === 'gold-dark';
   const isDark = themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark';
 
   const titleScaleClass =
-    textSize === 'giant' ? 'text-3xl sm:text-5xl' :
-    textSize === 'xlarge' ? 'text-2xl sm:text-4xl' : 
-    'text-xl sm:text-3xl';
+    textSize === 'giant' ? 'text-3xl sm:text-5xl lg:text-6xl' :
+    textSize === 'xlarge' ? 'text-2xl sm:text-4xl lg:text-5xl' : 
+    textSize === 'large' ? 'text-xl sm:text-3xl lg:text-4xl' :
+    'text-lg sm:text-2xl lg:text-3xl';
 
   const cardTitleClass =
-    textSize === 'giant' ? 'text-2xl sm:text-3xl' :
-    textSize === 'xlarge' ? 'text-xl sm:text-2xl' : 
-    'text-lg sm:text-xl';
+    textSize === 'giant' ? 'text-2xl sm:text-4xl' :
+    textSize === 'xlarge' ? 'text-xl sm:text-3xl' : 
+    textSize === 'large' ? 'text-lg sm:text-2xl' :
+    'text-base sm:text-xl';
 
   const bodyScaleClass =
-    textSize === 'giant' ? 'text-lg sm:text-xl' :
-    textSize === 'xlarge' ? 'text-base sm:text-lg' : 
+    textSize === 'giant' ? 'text-xl sm:text-2xl' :
+    textSize === 'xlarge' ? 'text-lg sm:text-xl' : 
+    textSize === 'large' ? 'text-base sm:text-lg' :
     'text-sm sm:text-base';
 
   return (
-    <div className="space-y-6 sm:space-y-8 w-full max-w-6xl mx-auto pb-16 overflow-hidden">
+    <div className="space-y-3.5 sm:space-y-4 w-full max-w-6xl mx-auto pb-12 overflow-hidden">
+      {/* 1. LES 3 ACTIONS ESSENTIELLES (TOUJOURS EN PREMIER SUR LA PAGE - RÉDUITES DE 40%) */}
+      <div id="senior-primary-actions" className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 w-full">
+        {/* 1. SOS URGENCE */}
+        <div 
+          id="senior-card-sos"
+          onClick={onOpenSOS}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && onOpenSOS()}
+          className="bg-gradient-to-br from-red-600 via-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-lg shadow-red-600/25 border-3 border-red-300 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-0.5 active:scale-98 group relative overflow-hidden"
+        >
+          <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/15 rounded-full blur-xl pointer-events-none" />
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
+              <span className="bg-red-950/80 text-red-100 text-[11px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-md inline-block">
+                🚨 Secours Immédiats
+              </span>
+              <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg sm:text-xl shadow-inner group-hover:scale-110 transition flex-shrink-0">
+                🚨
+              </span>
+            </div>
+            <h2 className="font-black font-['Outfit'] leading-tight text-white text-lg sm:text-xl md:text-2xl">
+              SOS URGENCE
+            </h2>
+            <p className="text-red-100 font-semibold mt-1 text-xs sm:text-sm leading-snug line-clamp-2">
+              Alerte en 1 clic vos 3 voisins certifiés & le SAMU (15).
+            </p>
+          </div>
+          <div className="mt-2.5 pt-2 border-t border-red-400/50 flex items-center justify-between font-black text-xs sm:text-sm text-white">
+            <span>Déclencher l'alerte</span>
+            <span className="text-base sm:text-lg">➔</span>
+          </div>
+        </div>
+
+        {/* 2. VIENS ! BESOIN D'AIDE (VOCALE & VIDÉO) */}
+        <div 
+          id="senior-card-viens"
+          onClick={onOpenHelpRequest}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && onOpenHelpRequest()}
+          className={`rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-lg border-3 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-0.5 active:scale-98 group relative overflow-hidden ${
+            isGold
+              ? 'bg-gradient-to-br from-amber-600 to-yellow-600 text-stone-950 border-amber-300 shadow-gold'
+              : 'bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 text-white border-amber-300 shadow-orange-600/25'
+          }`}
+        >
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
+              <span className="bg-black/40 text-white text-[11px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-md inline-block">
+                🎙️ Dictée vocale ou 📹 Vidéo
+              </span>
+              <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg sm:text-xl shadow-inner group-hover:scale-110 transition flex-shrink-0">
+                ⚡
+              </span>
+            </div>
+            <h2 className="font-black leading-tight text-white text-lg sm:text-xl md:text-2xl">
+              Viens m'aider !
+            </h2>
+            <p className="font-semibold mt-1 text-xs sm:text-sm leading-snug text-amber-50 line-clamp-2">
+              Courses, ampoule, télévision : parlez au micro ou montrez en vidéo.
+            </p>
+          </div>
+          <div className="mt-2.5 pt-2 border-t border-white/30 flex items-center justify-between font-black text-xs sm:text-sm text-white">
+            <span>Parler ou montrer en vidéo</span>
+            <span className="text-base sm:text-lg">➔</span>
+          </div>
+        </div>
+
+        {/* 3. CHALEUR HUMAINE & LIEN */}
+        <div 
+          id="senior-card-chaleur-humaine"
+          onClick={onOpenOrganizeModal}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && onOpenOrganizeModal()}
+          className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-lg shadow-emerald-600/25 border-3 border-emerald-300 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-0.5 active:scale-98 group relative overflow-hidden"
+        >
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
+              <span className="bg-emerald-950/80 text-emerald-100 text-[11px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-md inline-block">
+                ☕ Lien & Chaleur humaine
+              </span>
+              <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg sm:text-xl shadow-inner group-hover:scale-110 transition flex-shrink-0">
+                ❤️
+              </span>
+            </div>
+            <h2 className="font-black leading-tight text-white text-lg sm:text-xl md:text-2xl">
+              Chaleur Humaine
+            </h2>
+            <p className="text-emerald-100 font-semibold mt-1 text-xs sm:text-sm leading-snug line-clamp-2">
+              Café, belote, balade, papote : partagez un moment en 1 clic !
+            </p>
+          </div>
+          <div className="mt-2.5 pt-2 border-t border-emerald-400/50 flex items-center justify-between font-black text-xs sm:text-sm text-white">
+            <span>Organiser un moment</span>
+            <span className="text-base sm:text-lg">➔</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Live Help & Arrival Tracking for Senior */}
+      {activeRequests.length > 0 && onConfirmResolvedRequest && (
+        <SeniorHelpTrackingSection
+          requests={activeRequests}
+          textSize={textSize}
+          themeConfig={themeConfig}
+          onConfirmResolved={onConfirmResolvedRequest}
+          onSimulateNeighborArrival={onSimulateNeighborArrival}
+        />
+      )}
+
       {/* Friendly Weather & Welcome Bar */}
-      <div className={`rounded-3xl p-4 sm:p-7 border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+      <div className={`rounded-3xl p-4 sm:p-5 border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
         themeConfig.themeId === 'gold-white'
           ? 'bg-white border-amber-300 shadow-gold'
           : themeConfig.themeId === 'gold-dark'
@@ -92,7 +218,7 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
           : 'bg-white border-slate-200 shadow-xs'
       }`}>
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-xs sm:text-base font-extrabold text-orange-700 bg-orange-100/70 px-3 py-1 rounded-full w-fit mb-2">
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-orange-700 bg-orange-100/80 px-3 py-1 rounded-full w-fit mb-1.5">
             <Sun className="w-4 h-4 text-amber-500 animate-spin flex-shrink-0" />
             <span className="truncate">Météo à {currentCity.name} : Soleil · 22°C</span>
           </div>
@@ -101,17 +227,17 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
           }`}>
             Bonjour <span className={isGold ? 'text-amber-500' : 'text-orange-600'}>Jean</span> 👋
           </h1>
-          <p className={`font-semibold mt-1 ${bodyScaleClass} ${
+          <p className={`font-semibold mt-0.5 ${bodyScaleClass} ${
             isDark ? 'text-slate-300' : 'text-slate-600'
           }`}>
             Quartier Le Couchant · 12 jeunes et aînés bienveillants sont connectés près de chez vous.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto flex-shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto flex-shrink-0">
           <button
-            onClick={() => speakText(`Bonjour Jean. Bienvenue à La Grande-Motte dans le quartier du Couchant. Douze voisins sont connectés pour vous aider. Si vous avez besoin d'aide ou d'une urgence, tout est écrit en grand ci-dessous.`)}
-            className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-black text-xs sm:text-base cursor-pointer transition shadow-xs border-2 ${
+            onClick={() => speakText(`Bonjour Jean. Bienvenue à La Grande-Motte. Vos trois options d'urgence, de coup de main et de chaleur humaine sont prêtes en haut de l'écran.`)}
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-black text-sm sm:text-base cursor-pointer transition shadow-xs border-2 ${
               isGold 
                 ? 'bg-amber-100/80 border-amber-400 text-amber-950 hover:bg-amber-200' 
                 : 'bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900'
@@ -124,7 +250,7 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
           {onToggleFullscreen && (
             <button
               onClick={onToggleFullscreen}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-black text-xs sm:text-base cursor-pointer transition shadow-xs border-2 active:scale-95 ${
+              className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-2xl font-black text-sm sm:text-base cursor-pointer transition shadow-xs border-2 active:scale-95 ${
                 isFullscreen
                   ? 'bg-amber-500 text-stone-950 border-amber-600 shadow-md ring-2 ring-amber-300'
                   : isGold
@@ -146,88 +272,50 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3 Giant Action Cards for Seniors */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 w-full">
-        {/* 1. SOS URGENCE */}
+      {/* L'Ami Bienveillant ProxiLien Banner (Assistant Souverain) */}
+      {onOpenAIAssistant && (
         <div 
-          onClick={onOpenSOS}
-          className="bg-gradient-to-br from-red-600 via-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white rounded-3xl p-5 sm:p-7 shadow-xl shadow-red-600/30 border-4 border-red-300 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-1 active:scale-98 group relative overflow-hidden"
-        >
-          <div className="absolute -top-12 -right-12 w-36 h-36 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-          <div>
-            <div className="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-white/20 flex items-center justify-center text-3xl sm:text-4xl mb-3 sm:mb-4 shadow-inner group-hover:scale-110 transition">
-              🚨
-            </div>
-            <span className="bg-red-950/80 text-red-100 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-md mb-2 inline-block">
-              Secours Immédiats
-            </span>
-            <h2 className={`font-black font-['Outfit'] leading-tight text-white ${cardTitleClass}`}>
-              URGENCE (SOS)
-            </h2>
-            <p className={`text-red-100 font-semibold mt-2.5 leading-snug ${bodyScaleClass}`}>
-              Alerte en 1 clic vos 3 voisins de garde certifiés et contacte le SAMU (15).
-            </p>
-          </div>
-          <div className="mt-6 sm:mt-8 pt-4 border-t border-red-400/50 flex items-center justify-between font-black text-sm sm:text-base text-white">
-            <span>Appuyer pour voir l'alerte</span>
-            <span className="text-xl sm:text-2xl">➔</span>
-          </div>
-        </div>
-
-        {/* 2. J'AI BESOIN D'AIDE */}
-        <div 
-          onClick={onOpenHelpRequest}
-          className={`rounded-3xl p-5 sm:p-7 shadow-xl border-4 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-1 active:scale-98 group relative overflow-hidden ${
-            isGold
-              ? 'bg-gradient-to-br from-amber-600 to-yellow-600 text-stone-950 border-amber-300 shadow-gold'
-              : 'bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 text-white border-amber-300 shadow-orange-600/30'
+          onClick={onOpenAIAssistant}
+          className={`p-4 sm:p-5 rounded-3xl border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-pointer hover:shadow-md ${
+            themeConfig.themeId === 'gold-white'
+              ? 'bg-amber-50/80 border-amber-300 shadow-gold'
+              : themeConfig.themeId === 'gold-dark'
+              ? 'bg-stone-900 border-amber-500 shadow-gold text-white'
+              : isDark
+              ? 'bg-slate-900 border-slate-700 text-white'
+              : 'bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100 border-orange-200'
           }`}
         >
-          <div>
-            <div className="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-white/20 flex items-center justify-center text-3xl sm:text-4xl mb-3 sm:mb-4 shadow-inner group-hover:scale-110 transition">
-              🎙️
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-2xl shadow-md flex-shrink-0">
+              🤖
             </div>
-            <span className="bg-black/30 text-white text-xs font-black uppercase tracking-wider px-3 py-1 rounded-md mb-2 inline-block">
-              Dictée vocale ou Vidéo
-            </span>
-            <h2 className={`font-black leading-tight text-white ${cardTitleClass}`}>
-              J'ai besoin d'un coup de main
-            </h2>
-            <p className={`font-semibold mt-2.5 leading-snug text-amber-50 ${bodyScaleClass}`}>
-              Courses, ampoule, télévision, sac lourd : parlez simplement dans votre micro.
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-black text-base sm:text-lg">
+                  L'Ami Bienveillant ProxiLien
+                </h3>
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                  Moteur Souverain ALPHABETTE
+                </span>
+              </div>
+              <p className={`font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'} text-xs sm:text-sm mt-0.5`}>
+                Besoin d'aide pour rédiger une demande de voisin, trouver une sortie ou discuter en toute confiance ?
+              </p>
+            </div>
           </div>
-          <div className="mt-6 sm:mt-8 pt-4 border-t border-white/30 flex items-center justify-between font-black text-sm sm:text-base text-white">
-            <span>Parler à un voisin</span>
-            <span className="text-xl sm:text-2xl">➔</span>
-          </div>
-        </div>
 
-        {/* 3. ORGANISER OU REJOINDRE UN MOMENT */}
-        <div 
-          onClick={onOpenOrganizeModal}
-          className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white rounded-3xl p-5 sm:p-7 shadow-xl shadow-emerald-600/30 border-4 border-emerald-300 flex flex-col justify-between cursor-pointer transition transform hover:-translate-y-1 active:scale-98 group relative overflow-hidden"
-        >
-          <div>
-            <div className="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-white/20 flex items-center justify-center text-3xl sm:text-4xl mb-3 sm:mb-4 shadow-inner group-hover:scale-110 transition">
-              ☕
-            </div>
-            <span className="bg-emerald-950/80 text-emerald-100 text-xs font-black uppercase tracking-wider px-3 py-1 rounded-md mb-2 inline-block">
-              Lien & Chaleur humaine
-            </span>
-            <h2 className={`font-black leading-tight text-white ${cardTitleClass}`}>
-              Organiser un Moment
-            </h2>
-            <p className={`text-emerald-100 font-semibold mt-2.5 leading-snug ${bodyScaleClass}`}>
-              Café au port, belote, balade en bord de mer, goûter maison : créez une rencontre en 1 clic !
-            </p>
-          </div>
-          <div className="mt-6 sm:mt-8 pt-4 border-t border-emerald-400/50 flex items-center justify-between font-black text-sm sm:text-base text-white">
-            <span>Lancer une invitation</span>
-            <span className="text-xl sm:text-2xl">➔</span>
-          </div>
+          <button
+            type="button"
+            className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-extrabold px-5 py-2.5 rounded-2xl text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+          >
+            <span>Demander conseil</span>
+            <span>→</span>
+          </button>
         </div>
-      </div>
+      )}
+
+
 
       {/* SECTION: GESTION & TRACE DES PRÊTS D'OUTILS */}
       <ToolLoansSection
@@ -269,7 +357,7 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
 
           <button
             onClick={onOpenOrganizeModal}
-            className="flex-shrink-0 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black px-6 py-3.5 rounded-2xl shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 text-base cursor-pointer transition active:scale-95 border-2 border-amber-200"
+            className="flex-shrink-0 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-black px-7 py-4 rounded-2xl shadow-lg shadow-orange-600/30 flex items-center justify-center gap-2 text-lg sm:text-xl cursor-pointer transition active:scale-95 border-2 border-amber-200"
           >
             <Plus className="w-6 h-6 stroke-[3]" />
             <span>+ Proposer une rencontre</span>
@@ -288,21 +376,27 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
                   isGold
                     ? 'bg-amber-50/40 border-amber-300 hover:border-amber-400'
                     : isDark
-                    ? 'bg-slate-800 border-slate-700'
+                    ? 'bg-slate-800 border-slate-700 text-white shadow-md'
                     : 'bg-slate-50 border-slate-200 hover:border-orange-300'
                 }`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl p-2 bg-white rounded-2xl shadow-xs">
+                      <span className={`text-3xl p-2 rounded-2xl shadow-xs ${
+                        isDark ? 'bg-slate-700 border border-slate-600' : 'bg-white'
+                      }`}>
                         {evt.icon}
                       </span>
                       <div>
-                        <span className="text-xs font-black uppercase px-2 py-0.5 rounded-full bg-orange-100 text-orange-800">
+                        <span className={`text-sm font-black uppercase px-3 py-1 rounded-full ${
+                          isDark 
+                            ? 'bg-orange-950/80 text-orange-300 border border-orange-700/60' 
+                            : 'bg-orange-100 text-orange-800'
+                        }`}>
                           {evt.categoryLabel}
                         </span>
-                        <h4 className={`font-black text-lg sm:text-xl mt-1 leading-snug ${
+                        <h4 className={`font-black text-xl sm:text-2xl mt-1.5 leading-snug ${
                           isGold ? 'text-gold-gradient' : (isDark ? 'text-white' : 'text-slate-900')
                         }`}>
                           {evt.title}
@@ -311,35 +405,38 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-3 my-3 text-xs sm:text-sm font-bold text-slate-700 bg-white/80 p-3 rounded-xl border border-slate-200">
-                    <div className="flex items-center gap-1.5 text-orange-700">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 my-2.5 text-xs sm:text-sm font-bold">
+                    <div className={`flex items-center gap-1 ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>
                       <Calendar className="w-4 h-4" />
                       <span>{evt.date}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-orange-700">
+                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                    <div className={`flex items-center gap-1 ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>
                       <Clock className="w-4 h-4" />
                       <span>{evt.time}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-slate-700 w-full truncate">
-                      <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
+                    <div className={`flex items-center gap-1 w-full truncate text-xs ${isDark ? 'text-slate-300' : 'text-slate-600'} mt-0.5`}>
+                      <MapPin className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
                       <span className="truncate">{evt.location} ({evt.quartier})</span>
                     </div>
                   </div>
 
-                  <p className={`font-medium text-slate-700 leading-relaxed ${bodyScaleClass}`}>
+                  <p className={`font-medium leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-700'} ${bodyScaleClass}`}>
                     {evt.description}
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-slate-600">
+                <div className={`mt-4 pt-3 border-t flex items-center justify-between gap-2 ${
+                  isDark ? 'border-slate-700' : 'border-slate-200'
+                }`}>
+                  <span className={`text-sm sm:text-base font-bold ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                     👥 {evt.attendees.length} voisin{evt.attendees.length > 1 ? 's' : ''}
                   </span>
 
                   <button
                     onClick={() => onJoinEvent(evt.id)}
                     disabled={isAttending}
-                    className={`font-black text-sm px-4 py-2.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
+                    className={`font-black text-base sm:text-lg px-5 py-3 rounded-xl transition cursor-pointer flex items-center gap-2 ${
                       isAttending
                         ? 'bg-emerald-600 text-white cursor-default'
                         : 'bg-orange-600 hover:bg-orange-700 text-white shadow-xs'
@@ -378,10 +475,10 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
           <div className="flex items-center gap-2">
             <span className="text-xl sm:text-2xl">🤝</span>
             <div>
-              <h3 className={`font-black text-base sm:text-lg ${isGold ? 'text-gold-gradient' : ''}`}>
+              <h3 className={`font-black text-lg sm:text-xl ${isGold ? 'text-gold-gradient' : ''}`}>
                 Mes Voisins de Confiance ({currentCity.name})
               </h3>
-              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'} font-medium`}>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-slate-400' : 'text-slate-500'} font-medium`}>
                 Bénévoles certifiés disponibles par téléphone ou visite.
               </p>
             </div>
@@ -392,7 +489,7 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
           {EMERGENCY_CONTACTS.slice(3, 6).map((contact) => (
             <div 
               key={contact.id} 
-              className={`p-3 rounded-xl border-2 flex items-center justify-between gap-2.5 transition ${
+              className={`p-3.5 rounded-2xl border-2 flex items-center justify-between gap-2.5 transition ${
                 isGold 
                   ? 'bg-amber-50/50 border-amber-300' 
                   : isDark 
@@ -400,35 +497,43 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
                   : 'bg-slate-50 border-slate-200 hover:border-orange-300'
               }`}
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <span className="text-2xl sm:text-3xl p-1.5 bg-white rounded-xl shadow-2xs flex-shrink-0">{contact.avatar}</span>
+              <div className="flex items-center gap-3 min-w-0">
+                <span className={`text-3xl p-2 rounded-xl shadow-2xs flex-shrink-0 ${
+                  isDark ? 'bg-slate-700 border border-slate-600' : 'bg-white'
+                }`}>{contact.avatar}</span>
                 <div className="min-w-0">
-                  <h4 className={`font-black text-xs sm:text-sm truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <h4 className={`font-black text-base sm:text-lg truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {contact.name}
                   </h4>
-                  <p className="text-[11px] text-slate-500 font-bold truncate">{contact.role}</p>
+                  <p className={`text-sm font-bold truncate ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>{contact.role}</p>
                   {contact.distance && (
-                    <span className="inline-block text-[10px] text-emerald-800 font-black bg-emerald-100 px-1.5 py-0.2 rounded">
+                    <span className={`inline-block text-xs sm:text-sm font-black px-2 py-0.5 rounded-md ${
+                      isDark ? 'text-emerald-300 bg-emerald-950/80 border border-emerald-700/50' : 'text-emerald-800 bg-emerald-100'
+                    }`}>
                       📍 {contact.distance}
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
                   onClick={() => speakText(`Contact : ${contact.name}, ${contact.role}. Numéro : ${contact.phone}`)}
-                  className="p-1.5 text-slate-600 hover:text-orange-600 rounded-lg hover:bg-white transition"
+                  className={`p-2 rounded-xl transition ${
+                    isDark 
+                      ? 'text-slate-300 hover:text-orange-400 hover:bg-slate-700' 
+                      : 'text-slate-600 hover:text-orange-600 hover:bg-white'
+                  }`}
                   title="Écouter le contact"
                 >
-                  <Volume2 className="w-4 h-4 text-orange-600" />
+                  <Volume2 className="w-5 h-5 text-orange-500" />
                 </button>
                 <a
                   href={`tel:${contact.phone.replace(/\s+/g, '')}`}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-2xs"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-4 py-2.5 rounded-xl text-sm sm:text-base flex items-center gap-1.5 shadow-2xs"
                   title={`Appeler ${contact.name}`}
                 >
-                  <Phone className="w-3.5 h-3.5" />
+                  <Phone className="w-4 h-4" />
                   <span>Appeler</span>
                 </a>
               </div>

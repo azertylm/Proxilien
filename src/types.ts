@@ -1,6 +1,6 @@
 export type UserMode = 'senior' | 'jeune' | 'tv';
 
-export type TextSize = 'large' | 'xlarge' | 'giant';
+export type TextSize = 'normal' | 'large' | 'xlarge' | 'giant';
 
 export type ThemeId = 
   | 'light'           // Mode Clair classique & chaleureux
@@ -97,19 +97,33 @@ export interface EmergencyContact {
   avatar: string;
 }
 
+export type HelpRequestStatus = 'en_attente' | 'pris_en_charge' | 'en_route' | 'arrive' | 'resolu';
+
 export interface HelpRequest {
   id: string;
   seniorName: string;
   age: number;
   quartier: string;
+  seniorAddress?: string;
+  seniorPhone?: string;
   timeAgo: string;
   title: string;
   description: string;
   urgency: 'urgent' | 'aujourd_hui' | 'flexible';
   category: InitiativeCategory;
   videoUrl?: string;
-  status: 'en_attente' | 'pris_en_charge' | 'resolu';
+  status: HelpRequestStatus;
   helperName?: string;
+  helperPhone?: string;
+  helperAvatar?: string;
+  helperRole?: string;
+  estimatedArrivalTime?: string; // ex: "14h30", "Dans 15 min"
+  arrivalTransport?: string; // ex: "À pied (5 min)", "À vélo", "En voiture"
+  arrivalNote?: string; // ex: "Je viens avec ma boîte à outils et mes tournevis !"
+  acceptedAt?: string;
+  enRouteAt?: string;
+  arrivedAt?: string;
+  isDelayNotified?: boolean;
 }
 
 export interface NeighborProfile {

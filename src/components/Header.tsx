@@ -15,7 +15,11 @@ import {
   Moon,
   Crown,
   Maximize,
-  Minimize
+  Minimize,
+  ShieldCheck,
+  Bot,
+  Sparkles,
+  Building2
 } from 'lucide-react';
 import { speakText, stopSpeaking } from '../utils/speech';
 
@@ -34,6 +38,9 @@ interface HeaderProps {
   onQuickToggleTheme: () => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  onOpenSovereignStatus?: () => void;
+  onOpenSubscriptionModal?: () => void;
+  onOpenAIAssistant?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -51,6 +58,9 @@ export const Header: React.FC<HeaderProps> = ({
   onQuickToggleTheme,
   isFullscreen = false,
   onToggleFullscreen,
+  onOpenSovereignStatus,
+  onOpenSubscriptionModal,
+  onOpenAIAssistant,
 }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -66,9 +76,10 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const cycleTextSize = () => {
-    if (textSize === 'large') onChangeTextSize('xlarge');
+    if (textSize === 'normal') onChangeTextSize('large');
+    else if (textSize === 'large') onChangeTextSize('xlarge');
     else if (textSize === 'xlarge') onChangeTextSize('giant');
-    else onChangeTextSize('large');
+    else onChangeTextSize('normal');
   };
 
   const isGold = themeConfig.themeId === 'gold-white' || themeConfig.themeId === 'gold-dark';
@@ -112,8 +123,35 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0 text-xs">
-          <span className="hidden md:inline font-bold">Solidarité Intergénérationnelle</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 text-xs">
+          {/* Sovereign Indicator */}
+          {onOpenSovereignStatus && (
+            <button
+              id="btn-header-sovereign-status"
+              onClick={onOpenSovereignStatus}
+              className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-100 border border-emerald-400/40 px-2 py-0.5 rounded flex items-center gap-1 font-bold text-[10px] sm:text-xs transition cursor-pointer"
+              title="Architecture IA Hybride, Résiliente & Souveraine ALPHABETTE"
+            >
+              <ShieldCheck className="w-3 h-3 text-emerald-300" />
+              <span className="hidden sm:inline">IA Souveraine</span>
+              <span className="sm:hidden">Souverain</span>
+            </button>
+          )}
+
+          {/* ALPHABETTE Subscription */}
+          {onOpenSubscriptionModal && (
+            <button
+              id="btn-header-alphabette-pricing"
+              onClick={onOpenSubscriptionModal}
+              className="bg-white/15 hover:bg-white/25 text-white border border-white/30 px-2 py-0.5 rounded flex items-center gap-1 font-bold text-[10px] sm:text-xs transition cursor-pointer"
+              title="Modèle Éthique & Tarif ALPHABETTE (1€ / 3€ Pack)"
+            >
+              <Building2 className="w-3 h-3 text-amber-300" />
+              <span className="hidden md:inline">ALPHABETTE 1€/mois</span>
+              <span className="md:hidden">1€/mois</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenCitySelector}
             className="bg-white/90 hover:bg-white text-slate-900 font-extrabold px-2 py-0.5 rounded shadow-xs transition cursor-pointer text-[11px] sm:text-xs"
@@ -253,20 +291,31 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden xl:inline">{isSpeaking ? 'Arrêter' : 'Écouter'}</span>
             </button>
 
-            {/* Text Size Cycle with Large label */}
+            {/* Text Size Cycle Button: BIG */}
             <button
               id="btn-toggle-text-size"
               onClick={cycleTextSize}
-              className={`px-2 py-1.5 sm:px-2.5 sm:py-2 rounded-xl border text-xs font-black transition cursor-pointer flex items-center justify-center ${
+              className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-black transition cursor-pointer flex flex-col items-center justify-center min-w-[42px] ${
                 isDark 
-                  ? 'bg-slate-800 border-slate-700 text-white' 
+                  ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700' 
                   : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
               }`}
-              title={`Taille du texte : ${textSize}. Cliquer pour agrandir.`}
+              title={`BIG : Taille du texte (${
+                textSize === 'normal' ? 'Normal / Compact' :
+                textSize === 'large' ? 'Grand' :
+                textSize === 'xlarge' ? 'Très Grand' : 'Géant'
+              }). Cliquer pour agrandir.`}
+              aria-label="Agrandir la taille du texte : BIG"
             >
-              <span className="text-orange-600 font-black">
-                {textSize === 'large' ? 'A' : textSize === 'xlarge' ? 'A+' : 'A++'}
+              <span className="text-orange-600 font-black tracking-wider leading-none text-xs sm:text-[13px]">
+                BIG
               </span>
+              <div className="flex items-center gap-0.5 mt-0.5" aria-hidden="true">
+                <span className="w-1 h-1 rounded-full bg-orange-600" />
+                <span className={`w-1 h-1 rounded-full ${textSize === 'large' || textSize === 'xlarge' || textSize === 'giant' ? 'bg-orange-600' : 'bg-slate-300 dark:bg-slate-600'}`} />
+                <span className={`w-1 h-1 rounded-full ${textSize === 'xlarge' || textSize === 'giant' ? 'bg-orange-600' : 'bg-slate-300 dark:bg-slate-600'}`} />
+                <span className={`w-1 h-1 rounded-full ${textSize === 'giant' ? 'bg-orange-600' : 'bg-slate-300 dark:bg-slate-600'}`} />
+              </div>
             </button>
 
             {/* Fullscreen Mode Button */}
@@ -295,6 +344,24 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
+            {/* AI Assistant Button */}
+            {onOpenAIAssistant && (
+              <button
+                id="btn-header-ai-assistant"
+                onClick={onOpenAIAssistant}
+                className={`p-2 sm:px-2.5 sm:py-2 rounded-xl border flex items-center gap-1.5 text-xs font-black transition cursor-pointer ${
+                  isDark
+                    ? 'bg-slate-800 border-orange-500/60 text-orange-400 hover:bg-slate-700 shadow-xs'
+                    : 'bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100 shadow-xs'
+                }`}
+                title="Consulter l'Ami Bienveillant ProxiLien (Moteur Souverain ALPHABETTE)"
+                aria-label="Assistant ProxiLien"
+              >
+                <Bot className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                <span className="hidden xl:inline">Ami IA</span>
+              </button>
+            )}
+
             {/* Direct SOS Button in Header */}
             <button
               id="btn-header-sos"
@@ -309,7 +376,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Mobile Row 2: Mode Selector full width (Visible on mobile only, hidden on md+) */}
-        <div className="md:hidden mt-2 pt-1 border-t border-slate-200/50">
+        <div className={`md:hidden mt-2 pt-1 border-t ${isDark ? 'border-slate-800' : 'border-slate-200/50'}`}>
           <div className={`grid grid-cols-3 p-1 rounded-xl border gap-1 ${
             isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200/80'
           }`}>
@@ -322,7 +389,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <User className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">Mode Aîné</span>
+              <span className="truncate"><span className="hidden sm:inline">Mode </span>Aîné</span>
             </button>
 
             <button
@@ -341,8 +408,8 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => onChangeUserMode('tv')}
               className={`py-1.5 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1 transition cursor-pointer ${
                 userMode === 'tv'
-                  ? 'bg-purple-700 text-white shadow-xs'
-                  : 'text-purple-700'
+                  ? 'bg-purple-700 text-white shadow-xs ring-1 ring-purple-400'
+                  : (isDark ? 'text-purple-300' : 'text-purple-700')
               }`}
             >
               <Tv className="w-3.5 h-3.5 flex-shrink-0 text-amber-300" />

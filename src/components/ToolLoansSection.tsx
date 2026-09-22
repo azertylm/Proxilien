@@ -41,6 +41,7 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
   const returnedLoans = loans.filter(l => l.status === 'rendu');
 
   const isGold = themeConfig.themeId === 'gold-white' || themeConfig.themeId === 'gold-dark';
+  const isDark = themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark';
 
   const handleReadSummary = () => {
     if (activeLoans.length === 0) {
@@ -58,30 +59,36 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
         : themeConfig.themeId === 'gold-dark'
         ? 'bg-stone-900 border-amber-500/80 text-white shadow-gold-lg'
         : themeConfig.themeId === 'dark'
-        ? 'bg-slate-900 border-slate-700 text-white'
+        ? 'bg-slate-900 border-slate-700 text-white shadow-md'
         : themeConfig.themeId === 'high-contrast'
         ? 'bg-black border-4 border-yellow-400 text-yellow-300'
         : 'bg-white border-slate-200 shadow-xs'
     }`}>
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-stone-200 pb-3">
+      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-3 border-b pb-3 ${
+        isDark ? 'border-slate-800' : 'border-stone-200'
+      }`}>
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+            <span className={`border text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+              isDark 
+                ? 'bg-amber-950/80 text-amber-300 border-amber-700/60' 
+                : 'bg-amber-100 text-amber-900 border-amber-300'
+            }`}>
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
               Traçabilité & Tranquillité d'esprit
             </span>
-            <span className="text-xs text-stone-500 font-bold hidden sm:inline">
+            <span className={`text-xs font-bold hidden sm:inline ${isDark ? 'text-slate-400' : 'text-stone-500'}`}>
               {currentCity.name}
             </span>
           </div>
 
           <h2 className={`text-lg sm:text-2xl font-black tracking-tight flex items-center gap-2 ${
-            isGold ? 'text-gold-gradient' : 'text-stone-900'
+            isGold ? 'text-gold-gradient' : isDark ? 'text-white' : 'text-stone-900'
           }`}>
             <span>🤝 Prêt d'outils en Confiance</span>
           </h2>
-          <p className="text-xs text-stone-600 font-medium mt-0.5">
+          <p className={`text-xs font-medium mt-0.5 ${isDark ? 'text-slate-300' : 'text-stone-600'}`}>
             Prêtez votre matériel à un jeune voisin avec reçu numérique SMS et suivi officiel.
           </p>
         </div>
@@ -90,10 +97,14 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={handleReadSummary}
-            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1 text-xs font-bold transition cursor-pointer"
+            className={`p-2 sm:px-3 sm:py-1.5 rounded-xl border flex items-center gap-1 text-xs font-bold transition cursor-pointer ${
+              isDark
+                ? 'bg-slate-800 hover:bg-slate-700 text-amber-300 border-amber-600/50'
+                : 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-300'
+            }`}
             title="Écouter l'état des prêts"
           >
-            <Volume2 className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
+            <Volume2 className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
             <span className="hidden sm:inline">Écouter</span>
           </button>
 
@@ -114,6 +125,8 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
           className={`py-2 px-3.5 rounded-xl font-black text-xs sm:text-sm flex items-center gap-1.5 transition cursor-pointer ${
             activeTab === 'actifs'
               ? 'bg-amber-500 text-stone-950 shadow-xs'
+              : isDark
+              ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
           }`}
         >
@@ -126,6 +139,8 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
           className={`py-2 px-3.5 rounded-xl font-black text-xs sm:text-sm flex items-center gap-1.5 transition cursor-pointer ${
             activeTab === 'historique'
               ? 'bg-emerald-600 text-white shadow-xs'
+              : isDark
+              ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
           }`}
         >
@@ -137,10 +152,12 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
       {/* ACTIVE LOANS LIST */}
       {activeTab === 'actifs' && (
         activeLoans.length === 0 ? (
-          <div className="bg-stone-50 border-2 border-dashed border-stone-200 rounded-2xl p-6 text-center space-y-2">
+          <div className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 ${
+            isDark ? 'bg-slate-800/60 border-slate-700' : 'bg-stone-50 border-stone-200'
+          }`}>
             <span className="text-4xl">🧰</span>
-            <h4 className="font-black text-base text-stone-800">Aucun outil prêté actuellement</h4>
-            <p className="text-xs text-stone-500 max-w-md mx-auto">
+            <h4 className={`font-black text-base ${isDark ? 'text-white' : 'text-stone-800'}`}>Aucun outil prêté actuellement</h4>
+            <p className={`text-xs max-w-md mx-auto ${isDark ? 'text-slate-300' : 'text-stone-500'}`}>
               Une perceuse, une échelle ou un sécateur qui dort dans votre garage ? Prêtez-le à un jeune du quartier en toute sérénité.
             </p>
             <button
@@ -156,55 +173,73 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
             {activeLoans.map((loan) => (
               <div 
                 key={loan.id}
-                className="bg-white rounded-2xl border-2 border-amber-300 p-4 shadow-sm hover:shadow-md transition space-y-3 relative overflow-hidden"
+                className={`rounded-2xl border-2 p-4 shadow-sm transition space-y-3 relative overflow-hidden ${
+                  isDark 
+                    ? 'bg-slate-800 border-slate-700 text-white shadow-md' 
+                    : 'bg-white border-amber-300 hover:shadow-md'
+                }`}
               >
                 {/* Top ribbon on card */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-2xl p-1.5 bg-amber-100 rounded-xl flex-shrink-0">
+                    <span className={`text-2xl p-1.5 rounded-xl flex-shrink-0 ${
+                      isDark ? 'bg-slate-700 border border-slate-600' : 'bg-amber-100'
+                    }`}>
                       {loan.icon || '🪚'}
                     </span>
                     <div className="min-w-0">
-                      <span className="text-[10px] font-mono font-bold text-stone-400 block truncate">
+                      <span className={`text-[10px] font-mono font-bold block truncate ${
+                        isDark ? 'text-slate-400' : 'text-stone-400'
+                      }`}>
                         Reçu {loan.receiptCode}
                       </span>
-                      <h3 className="font-black text-sm sm:text-base text-stone-900 truncate">
+                      <h3 className={`font-black text-sm sm:text-base truncate ${
+                        isDark ? 'text-white' : 'text-stone-900'
+                      }`}>
                         {loan.toolName}
                       </h3>
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full text-[11px] font-black flex-shrink-0">
-                    <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
+                  <span className={`inline-flex items-center gap-1 border px-2.5 py-0.5 rounded-full text-[11px] font-black flex-shrink-0 ${
+                    isDark 
+                      ? 'bg-amber-950/80 text-amber-300 border-amber-700/60' 
+                      : 'bg-amber-100 text-amber-900 border-amber-300'
+                  }`}>
+                    <Clock className="w-3 h-3 text-amber-500 animate-pulse" />
                     En cours
                   </span>
                 </div>
 
-                {/* Borrower details */}
-                <div className="bg-amber-50/70 p-3 rounded-xl border border-amber-200/70 space-y-1 text-xs">
+                {/* Borrower details (Clean typography with left accent, no nested card) */}
+                <div className={`border-l-3 border-amber-400 pl-3 py-1 space-y-1 text-xs`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-stone-600 font-bold">Emprunté par :</span>
-                    <span className="font-black text-indigo-950 flex items-center gap-1">
+                    <span className={`font-bold ${isDark ? 'text-slate-400' : 'text-stone-600'}`}>Emprunté par :</span>
+                    <span className={`font-black flex items-center gap-1 ${isDark ? 'text-indigo-300' : 'text-indigo-950'}`}>
                       <span>{loan.borrowerAvatar || '🧑'}</span>
                       <span>{loan.borrowerName}</span>
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-stone-600 font-bold">Quartier :</span>
-                    <span className="font-bold text-stone-800">{loan.borrowerQuartier}</span>
+                    <span className={`font-bold ${isDark ? 'text-slate-400' : 'text-stone-600'}`}>Quartier :</span>
+                    <span className={`font-bold ${isDark ? 'text-slate-200' : 'text-stone-800'}`}>{loan.borrowerQuartier}</span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-amber-200/50">
-                    <span className="text-amber-900 font-bold">Date de retour prévue :</span>
-                    <span className="font-black text-amber-900 bg-amber-200/80 px-1.5 py-0.5 rounded">
+                  <div className="flex items-center justify-between pt-1">
+                    <span className={`font-bold ${isDark ? 'text-amber-400' : 'text-amber-900'}`}>Date de retour prévue :</span>
+                    <span className={`font-black px-1.5 py-0.5 rounded ${
+                      isDark ? 'text-amber-200 bg-amber-950/80 border border-amber-800/60' : 'text-amber-900 bg-amber-200/80'
+                    }`}>
                       {loan.expectedReturnDate} {loan.expectedReturnTime ? `(${loan.expectedReturnTime})` : ''}
                     </span>
                   </div>
                 </div>
 
                 {loan.notes && (
-                  <p className="text-[11px] text-stone-600 italic bg-stone-50 p-2 rounded-lg border border-stone-200 line-clamp-1">
+                  <p className={`text-[11px] italic p-2 rounded-lg border line-clamp-1 ${
+                    isDark ? 'bg-slate-900/80 border-slate-700 text-slate-300' : 'bg-stone-50 border-stone-200 text-stone-600'
+                  }`}>
                     « {loan.notes} »
                   </p>
                 )}
@@ -213,9 +248,13 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
                 <div className="pt-1 flex items-center justify-between gap-2">
                   <button
                     onClick={() => onOpenReceipt(loan)}
-                    className="flex-1 py-2 px-3 bg-white hover:bg-amber-50 border border-amber-300 text-amber-950 rounded-xl text-xs font-black flex items-center justify-center gap-1 cursor-pointer transition shadow-2xs"
+                    className={`flex-1 py-2 px-3 border rounded-xl text-xs font-black flex items-center justify-center gap-1 cursor-pointer transition shadow-2xs ${
+                      isDark
+                        ? 'bg-slate-700 hover:bg-slate-600 border-slate-600 text-amber-300'
+                        : 'bg-white hover:bg-amber-50 border-amber-300 text-amber-950'
+                    }`}
                   >
-                    <FileText className="w-3.5 h-3.5 text-amber-600" />
+                    <FileText className="w-3.5 h-3.5 text-amber-500" />
                     <span>Voir le reçu officiel</span>
                   </button>
 
@@ -230,11 +269,15 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
 
                   <button
                     onClick={() => onSendReminder(loan.id)}
-                    className="p-2 bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 rounded-xl cursor-pointer transition"
+                    className={`p-2 border rounded-xl cursor-pointer transition ${
+                      isDark
+                        ? 'bg-slate-700 hover:bg-slate-600 text-slate-200 border-slate-600'
+                        : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border-stone-200'
+                    }`}
                     title="Envoyer un rappel poli par SMS"
                     aria-label="Envoyer un rappel"
                   >
-                    <BellRing className="w-3.5 h-3.5 text-amber-700" />
+                    <BellRing className="w-3.5 h-3.5 text-amber-500" />
                   </button>
                 </div>
               </div>
@@ -250,33 +293,43 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
             <div
               key={loan.id}
               onClick={() => onOpenReceipt(loan)}
-              className="bg-white hover:bg-stone-50 p-3.5 rounded-2xl border border-stone-200 flex items-center justify-between gap-3 cursor-pointer transition"
+              className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition ${
+                isDark 
+                  ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-white' 
+                  : 'bg-white hover:bg-stone-50 border-stone-200'
+              }`}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-2xl p-1 bg-emerald-50 rounded-xl flex-shrink-0">
+                <span className={`text-2xl p-1 rounded-xl flex-shrink-0 ${
+                  isDark ? 'bg-slate-700 border border-slate-600' : 'bg-emerald-50'
+                }`}>
                   {loan.icon || '🪜'}
                 </span>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-black text-sm text-stone-900 truncate">
+                    <h4 className={`font-black text-sm truncate ${isDark ? 'text-white' : 'text-stone-900'}`}>
                       {loan.toolName}
                     </h4>
-                    <span className="text-[10px] font-mono text-stone-400">
+                    <span className={`text-[10px] font-mono ${isDark ? 'text-slate-400' : 'text-stone-400'}`}>
                       {loan.receiptCode}
                     </span>
                   </div>
-                  <p className="text-xs text-stone-500 truncate">
-                    Emprunté par <span className="font-bold text-stone-700">{loan.borrowerName}</span> ({loan.borrowerQuartier}) · Restitué le {loan.actualReturnDate || loan.expectedReturnDate}
+                  <p className={`text-xs truncate ${isDark ? 'text-slate-300' : 'text-stone-500'}`}>
+                    Emprunté par <span className={`font-bold ${isDark ? 'text-indigo-300' : 'text-stone-700'}`}>{loan.borrowerName}</span> ({loan.borrowerQuartier}) · Restitué le {loan.actualReturnDate || loan.expectedReturnDate}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-xs font-black">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-black ${
+                  isDark 
+                    ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-700/60' 
+                    : 'bg-emerald-100 text-emerald-800'
+                }`}>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                   Rendu
                 </span>
-                <ChevronRight className="w-4 h-4 text-stone-400" />
+                <ChevronRight className={`w-4 h-4 ${isDark ? 'text-slate-400' : 'text-stone-400'}`} />
               </div>
             </div>
           ))}
@@ -284,14 +337,16 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
       )}
 
       {/* Guarantee Footer Notice */}
-      <div className="mt-4 pt-3 border-t border-stone-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-stone-500">
-        <span className="flex items-center gap-1.5 font-bold text-emerald-800">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+      <div className={`mt-4 pt-3 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs ${
+        isDark ? 'border-slate-800 text-slate-400' : 'border-stone-200 text-stone-500'
+      }`}>
+        <span className={`flex items-center gap-1.5 font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-800'}`}>
+          <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
           Chaque prêt génère une preuve SMS + attestation numérique vérifiable par le CCAS.
         </span>
         <button
           onClick={onOpenNewLoanModal}
-          className="text-amber-700 hover:underline font-black cursor-pointer"
+          className={`font-black cursor-pointer ${isDark ? 'text-amber-400 hover:text-amber-300' : 'text-amber-700 hover:underline'}`}
         >
           + Prêter un autre équipement
         </button>

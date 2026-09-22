@@ -145,18 +145,23 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
     detail: string;
   }[] = [
     {
+      id: 'normal',
+      label: 'Compact',
+      detail: 'Taille standard pour afficher plus de contenu à l\'écran',
+    },
+    {
       id: 'large',
-      label: 'Grand (Confort standard)',
+      label: 'Grand (BIG)',
       detail: 'Recommandé pour un usage quotidien agréable',
     },
     {
       id: 'xlarge',
-      label: 'Très Grand (A+ Sans effort)',
+      label: 'Très Grand (BIG +)',
       detail: 'Idéal si vous lisez d\'ordinaire avec des lunettes',
     },
     {
       id: 'giant',
-      label: 'Géant (A++ Très gros caractères)',
+      label: 'Géant (BIG Max)',
       detail: 'Confort maximal pour aînés et malvoyants',
     },
   ];
@@ -323,7 +328,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
               <Maximize2 className="w-5 h-5 text-emerald-600" />
               <span>3. Grandeur des Lettres & Visibilité :</span>
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
               {sizes.map((s) => {
                 const isSelected = config.textSize === s.id;
                 return (
