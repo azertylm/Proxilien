@@ -138,17 +138,17 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* ALPHABETTE Subscription */}
+          {/* ALPHABETTE Roadmap & Model */}
           {onOpenSubscriptionModal && (
             <button
               id="btn-header-alphabette-pricing"
               onClick={onOpenSubscriptionModal}
               className="bg-white/15 hover:bg-white/25 text-white border border-white/30 px-2 py-0.5 rounded flex items-center gap-1 font-bold text-[10px] sm:text-xs transition cursor-pointer"
-              title="Modèle Éthique & Tarif ALPHABETTE (1€ / 3€ Pack)"
+              title="Feuille de Route & Modèle ALPHABETTE (Pilote Gratuit LGM & Pass 40€/an)"
             >
               <Building2 className="w-3 h-3 text-amber-300" />
-              <span className="hidden md:inline">ALPHABETTE 1€/mois</span>
-              <span className="md:hidden">1€/mois</span>
+              <span className="hidden md:inline">Pilote Gratuit LGM · Pass ALPHABETTE</span>
+              <span className="md:hidden">Pilote Gratuit</span>
             </button>
           )}
 
@@ -318,12 +318,12 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* Fullscreen Mode Button */}
+            {/* Fullscreen Mode Button (visible sm+) */}
             {onToggleFullscreen && (
               <button
                 id="btn-header-fullscreen"
                 onClick={onToggleFullscreen}
-                className={`p-2 sm:px-2.5 sm:py-2 rounded-xl border flex items-center gap-1.5 text-xs font-black transition cursor-pointer active:scale-95 ${
+                className={`hidden sm:flex p-2 sm:px-2.5 sm:py-2 rounded-xl border items-center gap-1.5 text-xs font-black transition cursor-pointer active:scale-95 ${
                   isFullscreen
                     ? 'bg-amber-500 text-stone-950 border-amber-600 shadow-md ring-2 ring-amber-300'
                     : isDark
@@ -344,12 +344,12 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
-            {/* AI Assistant Button */}
+            {/* AI Assistant Button (visible sm+) */}
             {onOpenAIAssistant && (
               <button
                 id="btn-header-ai-assistant"
                 onClick={onOpenAIAssistant}
-                className={`p-2 sm:px-2.5 sm:py-2 rounded-xl border flex items-center gap-1.5 text-xs font-black transition cursor-pointer ${
+                className={`hidden sm:flex p-2 sm:px-2.5 sm:py-2 rounded-xl border items-center gap-1.5 text-xs font-black transition cursor-pointer ${
                   isDark
                     ? 'bg-slate-800 border-orange-500/60 text-orange-400 hover:bg-slate-700 shadow-xs'
                     : 'bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100 shadow-xs'

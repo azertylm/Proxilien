@@ -181,19 +181,19 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
               >
                 {/* Top ribbon on card */}
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span className={`text-2xl p-1.5 rounded-xl flex-shrink-0 ${
                       isDark ? 'bg-slate-700 border border-slate-600' : 'bg-amber-100'
                     }`}>
                       {loan.icon || '🪚'}
                     </span>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <span className={`text-[10px] font-mono font-bold block truncate ${
                         isDark ? 'text-slate-400' : 'text-stone-400'
                       }`}>
                         Reçu {loan.receiptCode}
                       </span>
-                      <h3 className={`font-black text-sm sm:text-base truncate ${
+                      <h3 className={`font-black text-sm sm:text-base break-words line-clamp-2 ${
                         isDark ? 'text-white' : 'text-stone-900'
                       }`}>
                         {loan.toolName}
@@ -213,7 +213,7 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
 
                 {/* Borrower details (Clean typography with left accent, no nested card) */}
                 <div className={`border-l-3 border-amber-400 pl-3 py-1 space-y-1 text-xs`}>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-1">
                     <span className={`font-bold ${isDark ? 'text-slate-400' : 'text-stone-600'}`}>Emprunté par :</span>
                     <span className={`font-black flex items-center gap-1 ${isDark ? 'text-indigo-300' : 'text-indigo-950'}`}>
                       <span>{loan.borrowerAvatar || '🧑'}</span>
@@ -221,12 +221,12 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-1">
                     <span className={`font-bold ${isDark ? 'text-slate-400' : 'text-stone-600'}`}>Quartier :</span>
                     <span className={`font-bold ${isDark ? 'text-slate-200' : 'text-stone-800'}`}>{loan.borrowerQuartier}</span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex flex-wrap items-center justify-between gap-1 pt-1">
                     <span className={`font-bold ${isDark ? 'text-amber-400' : 'text-amber-900'}`}>Date de retour prévue :</span>
                     <span className={`font-black px-1.5 py-0.5 rounded ${
                       isDark ? 'text-amber-200 bg-amber-950/80 border border-amber-800/60' : 'text-amber-900 bg-amber-200/80'
@@ -299,22 +299,22 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
                   : 'bg-white hover:bg-stone-50 border-stone-200'
               }`}
             >
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span className={`text-2xl p-1 rounded-xl flex-shrink-0 ${
                   isDark ? 'bg-slate-700 border border-slate-600' : 'bg-emerald-50'
                 }`}>
                   {loan.icon || '🪜'}
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h4 className={`font-black text-sm truncate ${isDark ? 'text-white' : 'text-stone-900'}`}>
+                    <h4 className={`font-black text-sm break-words ${isDark ? 'text-white' : 'text-stone-900'}`}>
                       {loan.toolName}
                     </h4>
-                    <span className={`text-[10px] font-mono ${isDark ? 'text-slate-400' : 'text-stone-400'}`}>
+                    <span className={`text-[10px] font-mono flex-shrink-0 ${isDark ? 'text-slate-400' : 'text-stone-400'}`}>
                       {loan.receiptCode}
                     </span>
                   </div>
-                  <p className={`text-xs truncate ${isDark ? 'text-slate-300' : 'text-stone-500'}`}>
+                  <p className={`text-xs break-words line-clamp-1 sm:line-clamp-none ${isDark ? 'text-slate-300' : 'text-stone-500'}`}>
                     Emprunté par <span className={`font-bold ${isDark ? 'text-indigo-300' : 'text-stone-700'}`}>{loan.borrowerName}</span> ({loan.borrowerQuartier}) · Restitué le {loan.actualReturnDate || loan.expectedReturnDate}
                   </p>
                 </div>

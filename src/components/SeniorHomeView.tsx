@@ -92,7 +92,7 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
     'text-sm sm:text-base';
 
   return (
-    <div className="space-y-3.5 sm:space-y-4 w-full max-w-6xl mx-auto pb-12 overflow-hidden">
+    <div className="space-y-3.5 sm:space-y-4 w-full max-w-6xl mx-auto pb-12">
       {/* 1. LES 3 ACTIONS ESSENTIELLES (TOUJOURS EN PREMIER SUR LA PAGE - RÉDUITES DE 40%) */}
       <div id="senior-primary-actions" className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 w-full">
         {/* 1. SOS URGENCE */}
@@ -206,7 +206,7 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
       )}
 
       {/* Friendly Weather & Welcome Bar */}
-      <div className={`rounded-3xl p-4 sm:p-5 border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+      <div className={`rounded-3xl p-4 sm:p-5 border-2 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full ${
         themeConfig.themeId === 'gold-white'
           ? 'bg-white border-amber-300 shadow-gold'
           : themeConfig.themeId === 'gold-dark'
@@ -217,17 +217,17 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
           ? 'bg-black border-4 border-yellow-400 text-yellow-300'
           : 'bg-white border-slate-200 shadow-xs'
       }`}>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-orange-700 bg-orange-100/80 px-3 py-1 rounded-full w-fit mb-1.5">
+        <div className="w-full flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-extrabold text-orange-700 bg-orange-100/80 px-3 py-1 rounded-full w-fit max-w-full mb-1.5">
             <Sun className="w-4 h-4 text-amber-500 animate-spin flex-shrink-0" />
-            <span className="truncate">Météo à {currentCity.name} : Soleil · 22°C</span>
+            <span className="break-words">Météo à {currentCity.name} : Soleil · 22°C</span>
           </div>
-          <h1 className={`font-black tracking-tight ${titleScaleClass} ${
+          <h1 className={`font-black tracking-tight break-words ${titleScaleClass} ${
             isGold ? 'text-gold-gradient' : ''
           }`}>
             Bonjour <span className={isGold ? 'text-amber-500' : 'text-orange-600'}>Jean</span> 👋
           </h1>
-          <p className={`font-semibold mt-0.5 ${bodyScaleClass} ${
+          <p className={`font-semibold mt-0.5 break-words ${bodyScaleClass} ${
             isDark ? 'text-slate-300' : 'text-slate-600'
           }`}>
             Quartier Le Couchant · 12 jeunes et aînés bienveillants sont connectés près de chez vous.
@@ -415,9 +415,9 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
                       <Clock className="w-4 h-4" />
                       <span>{evt.time}</span>
                     </div>
-                    <div className={`flex items-center gap-1 w-full truncate text-xs ${isDark ? 'text-slate-300' : 'text-slate-600'} mt-0.5`}>
+                    <div className={`flex items-center gap-1 w-full text-xs ${isDark ? 'text-slate-300' : 'text-slate-600'} mt-0.5`}>
                       <MapPin className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-                      <span className="truncate">{evt.location} ({evt.quartier})</span>
+                      <span className="break-words line-clamp-1">{evt.location} ({evt.quartier})</span>
                     </div>
                   </div>
 
@@ -497,15 +497,15 @@ export const SeniorHomeView: React.FC<SeniorHomeViewProps> = ({
                   : 'bg-slate-50 border-slate-200 hover:border-orange-300'
               }`}
             >
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span className={`text-3xl p-2 rounded-xl shadow-2xs flex-shrink-0 ${
                   isDark ? 'bg-slate-700 border border-slate-600' : 'bg-white'
                 }`}>{contact.avatar}</span>
-                <div className="min-w-0">
-                  <h4 className={`font-black text-base sm:text-lg truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <div className="min-w-0 flex-1">
+                  <h4 className={`font-black text-base sm:text-lg break-words ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {contact.name}
                   </h4>
-                  <p className={`text-sm font-bold truncate ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>{contact.role}</p>
+                  <p className={`text-sm font-bold break-words ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>{contact.role}</p>
                   {contact.distance && (
                     <span className={`inline-block text-xs sm:text-sm font-black px-2 py-0.5 rounded-md ${
                       isDark ? 'text-emerald-300 bg-emerald-950/80 border border-emerald-700/50' : 'text-emerald-800 bg-emerald-100'

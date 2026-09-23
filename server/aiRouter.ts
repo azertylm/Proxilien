@@ -117,7 +117,15 @@ async function callGemini(
         contents: prompt,
         config: {
           temperature,
-          systemInstruction: systemInstruction || "Tu es l'assistant bienveillant et solidaire ProxiLien édité par ALPHABETTE (fondée par Valentin RICHAUD). Réponds avec chaleur, empathie et clarté pour les aînés et les jeunes de La Grande-Motte.",
+          systemInstruction: systemInstruction || `Tu es l'assistant de conception, de support et d'administration de ProxiLien, plateforme d'entraide locale et de communication citoyenne éditée par ALPHABETTE SASU (fondée par Valentin RICHAUD).
+
+FEUILLE DE ROUTE & STRATÉGIE DE DÉPLOIEMENT :
+1. Phase pilote (Année 1) : Test grandeur nature 100 % gratuit pour tous les habitants, aînés, associations et commerces de La Grande-Motte.
+2. Déploiement intercommunal (horizon 3-4 mois) :
+   - Commercialisation de licences municipales aux mairies et collectivités (tableau de bord d'alertes citoyennes, valorisation des commerces locaux, canal d'information directe sans dépendance aux GAFAM).
+   - Module individuel citoyen : accès direct pour usagers hors communes abonnées ou fonctionnalités avancées premium dans le Pass ALPHABETTE (40 € TTC / an avec la suite souveraine).
+
+ENGAGEMENTS : Respect absolu de la vie privée (zéro traçage, zéro cookie publicitaire, hébergement souverain OVH France). Ton chaleureux, civique, clair et bienveillant.`,
         },
       });
 
@@ -300,6 +308,8 @@ function generateResilientLocalFallback(prompt: string, failoverReason: string):
     text = "Bonjour ! Le lien humain et intergénérationnel est la priorité absolue de ProxiLien et de la charte éthique ALPHABETTE. ☕👥 Un veilleur de quartier peut vous contacter pour partager un moment convivial, une discussion ou une marche douce le long de la plage au Point Zéro.";
   } else if (lower.includes("urgence") || lower.includes("sos") || lower.includes("chute") || lower.includes("malaise")) {
     text = "⚠️ ALERTE DE SÉCURITÉ : En cas d'urgence médicale vitale, composez immédiatement le SAMU (15) ou les Pompiers (18). Vous pouvez également appuyer sur le bouton rouge SOS en haut de l'application pour alerter instantanément vos 3 veilleurs de confiance.";
+  } else if (lower.includes("tarif") || lower.includes("prix") || lower.includes("abonnement") || lower.includes("licence") || lower.includes("mairie") || lower.includes("commune") || lower.includes("feuille de route") || lower.includes("pass")) {
+    text = "Bonjour ! Dans le cadre de notre feuille de route ALPHABETTE SASU : la Phase Pilote (Année 1) est 100% gratuite pour tous les habitants, aînés, associations et commerces de La Grande-Motte. D'ici 3-4 mois, nous ouvrons le déploiement intercommunal avec des Licences Municipales pour les mairies (tableau de bord d'alertes citoyennes, canal direct sans GAFAM) et un Pass ALPHABETTE citoyen à 40 € TTC/an donnant accès à ProxiLien hors communes abonnées et à nos autres applications souveraines (LIDARSOL, OSOLAR). Zéro publicité, données hébergées en France.";
   } else {
     text = "Bonjour ! L'Ami Bienveillant ProxiLien est à votre écoute. Votre démarche s'inscrit dans les valeurs d'entraide, de respect de la vie privée et de proximité citoyenne portées par ALPHABETTE à La Grande-Motte. N'hésitez pas à publier votre besoin ou à rejoindre une activité conviviale.";
   }
