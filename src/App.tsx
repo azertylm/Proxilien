@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { UserMode, TextSize, CityInfo, HelpRequest, Initiative, ThemeConfig, CommunityEvent, ToolLoan, HelpRequestStatus } from './types';
+import { UserMode, TextSize, CityInfo, HelpRequest, Initiative, ThemeConfig, CommunityEvent, ToolLoan, HelpRequestStatus, CitizenAlert } from './types';
 import { CITIES_DATA } from './data/cities';
 import { INITIAL_HELP_REQUESTS, INITIAL_COMMUNITY_EVENTS, INITIAL_TOOL_LOANS } from './data/mockData';
+import { INITIAL_CITIZEN_ALERTS } from './data/mockAlerts';
 import { Header } from './components/Header';
 import { SeniorHomeView } from './components/SeniorHomeView';
 import { Village50View } from './components/Village50View';
@@ -18,8 +19,15 @@ import { ToolReceiptModal } from './components/ToolReceiptModal';
 import { SovereignStatusModal } from './components/SovereignStatusModal';
 import { AlphabetteSubscriptionModal } from './components/AlphabetteSubscriptionModal';
 import { AIAssistantModal } from './components/AIAssistantModal';
+import { P2PSyncModal } from './components/p2p/P2PSyncModal';
 import { FullscreenBanner } from './components/FullscreenBanner';
 import { useFullscreen } from './hooks/useFullscreen';
+import { 
+  getStoredLGMGeoStatus, 
+  verifyRealLGMGeolocation, 
+  simulateLGMGeolocation, 
+  LGMGeoResult 
+} from './services/geolocationService';
 import { 
   Home, 
   Sparkles, 
@@ -32,7 +40,12 @@ import {
   Building2,
   Bot,
   Mic,
-  Heart
+  Heart,
+  Radio,
+  Lock,
+  MapPin,
+  ExternalLink,
+  Compass
 } from 'lucide-react';
 
 export default function App() {
@@ -63,11 +76,91 @@ export default function App() {
   const [isSovereignModalOpen, setIsSovereignModalOpen] = useState(false);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [isP2PSyncOpen, setIsP2PSyncOpen] = useState(false);
 
-  // Active requests, community events, and tool loans
+  // Active requests, community events, tool loans, and encrypted citizen alerts
   const [activeRequests, setActiveRequests] = useState<HelpRequest[]>(INITIAL_HELP_REQUESTS);
   const [communityEvents, setCommunityEvents] = useState<CommunityEvent[]>(INITIAL_COMMUNITY_EVENTS);
   const [toolLoans, setToolLoans] = useState<ToolLoan[]>(INITIAL_TOOL_LOANS);
+  const [citizenAlerts, setCitizenAlerts] = useState<CitizenAlert[]>(INITIAL_CITIZEN_ALERTS);
+
+  // La Grande-Motte Mandatory Geolocation Status for 1-Year 100% Free Pass
+  const [lgmGeoStatus, setLgmGeoStatus] = useState<LGMGeoResult>(getStoredLGMGeoStatus());
+  const [isGeoLocating, setIsGeoLocating] = useState<boolean>(false);
+
+  const handleVerifyGPS = async () => {
+    setIsGeoLocating(true);
+    try {
+      const res = await verifyRealLGMGeolocation();
+      setLgmGeoStatus(res);
+    } finally {
+      setIsGeoLocating(false);
+    }
+  };
+
+  const handleSimulateLGM = (quartier = 'Le Couchant') => {
+    const res = simulateLGMGeolocation(quartier, false);
+    setLgmGeoStatus(res);
+  };
+
+  // Merge P2P civic data without server
+  const handleMergeCivicData = (data: {
+    helpRequests?: HelpRequest[];
+    toolLoans?: ToolLoan[];
+    communityEvents?: CommunityEvent[];
+    citizenAlerts?: CitizenAlert[];
+  }) => {
+    let count = 0;
+    if (data.helpRequests && data.helpRequests.length > 0) {
+      setActiveRequests(prev => {
+        const existing = new Set(prev.map(r => r.id));
+        const toAdd = data.helpRequests!.filter(r => !existing.has(r.id));
+        count += toAdd.length;
+        return [...toAdd, ...prev];
+      });
+    }
+
+    if (data.toolLoans && data.toolLoans.length > 0) {
+      setToolLoans(prev => {
+        const existing = new Set(prev.map(l => l.id));
+        const toAdd = data.toolLoans!.filter(l => !existing.has(l.id));
+        count += toAdd.length;
+        return [...toAdd, ...prev];
+      });
+    }
+
+    if (data.communityEvents && data.communityEvents.length > 0) {
+      setCommunityEvents(prev => {
+        const existing = new Set(prev.map(e => e.id));
+        const toAdd = data.communityEvents!.filter(e => !existing.has(e.id));
+        count += toAdd.length;
+        return [...toAdd, ...prev];
+      });
+    }
+
+    if (data.citizenAlerts && data.citizenAlerts.length > 0) {
+      setCitizenAlerts(prev => {
+        const existing = new Set(prev.map(a => a.id));
+        const toAdd = data.citizenAlerts!.filter(a => !existing.has(a.id));
+        count += toAdd.length;
+        return [...toAdd, ...prev];
+      });
+    }
+
+    showToast(
+      "Synchronisation P2P réussie ! 🟢",
+      `${count} fiches civiques et alertes chiffrées intégrées en direct hors-serveur.`
+    );
+  };
+
+  const handleBroadcastNewAlert = (newAlert: CitizenAlert) => {
+    setCitizenAlerts(prev => [newAlert, ...prev.filter(a => a.id !== newAlert.id)]);
+    showToast(
+      "Alerte Citoyenne chiffrée ! 🚨",
+      `"${newAlert.title}" est diffusée sur le réseau local P2P.`,
+      'alert'
+    );
+  };
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<{ title: string; desc: string; type?: 'success' | 'alert' } | null>(null);
@@ -314,7 +407,7 @@ export default function App() {
     themeConfig.textSize === 'large' ? 'text-base sm:text-lg' :
     'text-sm sm:text-base';
 
-  const isAnyModalOpen = isHelpRequestOpen || isSOSOpen || isCitySelectorOpen || isOrganizeModalOpen || isNewToolLoanOpen || Boolean(selectedLoanForReceipt) || isThemeCustomizerOpen || isSovereignModalOpen || isSubscriptionModalOpen || isAIAssistantOpen;
+  const isAnyModalOpen = isHelpRequestOpen || isSOSOpen || isCitySelectorOpen || isOrganizeModalOpen || isNewToolLoanOpen || Boolean(selectedLoanForReceipt) || isThemeCustomizerOpen || isSovereignModalOpen || isSubscriptionModalOpen || isAIAssistantOpen || isP2PSyncOpen;
 
   // If in TV Mode, render Google TV view
   if (userMode === 'tv') {
@@ -390,7 +483,153 @@ export default function App() {
         onOpenSovereignStatus={() => setIsSovereignModalOpen(true)}
         onOpenSubscriptionModal={() => setIsSubscriptionModalOpen(true)}
         onOpenAIAssistant={() => setIsAIAssistantOpen(true)}
+        onOpenP2PSync={() => setIsP2PSyncOpen(true)}
+        isLGMVerified={lgmGeoStatus.verified && lgmGeoStatus.isLGM}
+        onVerifyGeolocation={() => setIsSubscriptionModalOpen(true)}
       />
+
+      {/* LA GRANDE-MOTTE 1ère ANNÉE GRATUITE — GÉOLOCALISATION OBLIGATOIRE BANNER */}
+      {currentCity.name === 'La Grande-Motte' && (
+        <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 pt-2 pb-0">
+          {!lgmGeoStatus.verified ? (
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-950 text-white border-2 border-amber-400 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
+              <div className="flex items-start gap-3">
+                <span className="p-2.5 rounded-xl bg-amber-400 text-stone-950 font-black flex-shrink-0 animate-bounce shadow-md">
+                  <MapPin className="w-5 h-5" />
+                </span>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-lg bg-amber-400 text-stone-950 font-black text-xs uppercase tracking-wide shadow-xs">
+                      Offre Municipale Pilote · 1ère Année 100 % Gratuite
+                    </span>
+                    <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-lg bg-red-600 text-white shadow-xs flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      Géolocalisation Obligatoire
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-stone-100 mt-1 font-semibold leading-relaxed">
+                    Pour tous les habitants, aînés, commerces et associations de <strong className="text-amber-300 font-black underline decoration-amber-400 underline-offset-2">La Grande-Motte</strong> : validez votre géolocalisation pour activer votre <span className="text-emerald-300 font-extrabold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/50">Pass 1ère année 100 % gratuite</span> (valeur 59 € offerte par ALPHABETTE SASU et la Ville).
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-auto">
+                <button
+                  type="button"
+                  onClick={handleVerifyGPS}
+                  disabled={isGeoLocating}
+                  className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-black rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span>{isGeoLocating ? 'Géolocalisation...' : 'Valider ma position GPS'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSimulateLGM('Le Couchant')}
+                  className="px-3 py-2 bg-stone-800 hover:bg-stone-700 text-amber-300 border border-amber-400/50 font-black rounded-xl text-xs transition cursor-pointer"
+                  title="Simuler présence à La Grande-Motte pour test"
+                >
+                  Simuler LGM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSubscriptionModalOpen(true)}
+                  className="px-3 py-2 bg-amber-400 hover:bg-amber-300 text-stone-950 font-black rounded-xl text-xs transition cursor-pointer shadow-sm"
+                >
+                  Détails
+                </button>
+              </div>
+            </div>
+          ) : lgmGeoStatus.isLGM ? (
+            <div className="p-3.5 rounded-2xl bg-stone-950 border-2 border-emerald-400 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
+              <div className="flex items-center gap-3">
+                <span className="p-2 rounded-xl bg-emerald-500 text-stone-950 font-black flex-shrink-0 shadow-sm">
+                  <CheckCircle2 className="w-5 h-5" />
+                </span>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500 text-stone-950 font-black text-xs uppercase tracking-wide shadow-xs">
+                      Pass Citoyen La Grande-Motte Actif
+                    </span>
+                    <span className="text-xs font-black text-emerald-300">
+                      Quartier {lgmGeoStatus.quartier || 'Centre-Ville'} validé par géolocalisation
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-stone-200 mt-1 font-semibold">
+                    1ère année 100 % offerte par ALPHABETTE SASU & la Ville (0 € au lieu de 59 €/an).
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSubscriptionModalOpen(true)}
+                className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-black text-xs rounded-xl shadow-md cursor-pointer self-end sm:self-auto transition"
+              >
+                Voir les détails du Pass
+              </button>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-2xl bg-stone-950 border-2 border-amber-400 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
+              <div className="flex items-center gap-3">
+                <span className="p-2 rounded-xl bg-amber-500 text-stone-950 font-black flex-shrink-0 shadow-sm">
+                  <MapPin className="w-5 h-5" />
+                </span>
+                <div>
+                  <span className="px-2.5 py-0.5 rounded-lg bg-amber-500 text-stone-950 font-black text-xs uppercase tracking-wide">
+                    Position Hors Périmètre Communal
+                  </span>
+                  <p className="text-xs sm:text-sm text-stone-200 mt-1 font-semibold">
+                    Position détectée à {lgmGeoStatus.distanceKm} km du centre de La Grande-Motte. Vous bénéficiez de 7 jours d'essai gratuit puis des formules BYOK (39€) ou Confort (59€).
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsSubscriptionModalOpen(true)}
+                className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-stone-950 font-black text-xs rounded-xl shadow-md cursor-pointer self-end sm:self-auto flex-shrink-0 transition"
+              >
+                Voir les tarifs
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Active Encrypted Citizen Alerts Banner */}
+      {citizenAlerts.length > 0 && (
+        <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 pt-2 pb-0">
+          <div className="p-2 sm:p-2.5 rounded-2xl bg-gradient-to-r from-red-950/80 via-stone-900 to-amber-950/70 border border-red-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-md">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="p-1.5 rounded-xl bg-red-600 text-white animate-pulse flex-shrink-0">
+                <AlertTriangle className="w-4 h-4" />
+              </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-red-500/30 text-red-300 border border-red-500/40">
+                    Alerte Citoyenne Chiffrée
+                  </span>
+                  <span className="text-xs font-black text-white truncate">
+                    {citizenAlerts[0].title}
+                  </span>
+                </div>
+                <p className="text-[11px] text-stone-300 truncate hidden sm:block">
+                  {citizenAlerts[0].message} · {citizenAlerts[0].quartier}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-auto">
+              <button
+                onClick={() => setIsP2PSyncOpen(true)}
+                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-stone-950 font-black rounded-xl text-xs flex items-center gap-1 shadow-xs transition cursor-pointer active:scale-95"
+              >
+                <Radio className="w-3.5 h-3.5 animate-pulse" />
+                <span>Synchro P2P / Alertes ({citizenAlerts.length})</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-6 py-3 sm:py-6 overflow-x-hidden">
@@ -617,12 +856,17 @@ export default function App() {
         isOpen={isSovereignModalOpen}
         onClose={() => setIsSovereignModalOpen(false)}
         themeConfig={themeConfig}
+        onOpenPricing={() => setIsSubscriptionModalOpen(true)}
       />
 
       <AlphabetteSubscriptionModal
         isOpen={isSubscriptionModalOpen}
         onClose={() => setIsSubscriptionModalOpen(false)}
         themeConfig={themeConfig}
+        onOpenSovereignStatus={() => {
+          setIsSubscriptionModalOpen(false);
+          setIsSovereignModalOpen(true);
+        }}
       />
 
       <AIAssistantModal
@@ -637,16 +881,43 @@ export default function App() {
         }}
       />
 
+      <P2PSyncModal
+        isOpen={isP2PSyncOpen}
+        onClose={() => setIsP2PSyncOpen(false)}
+        themeConfig={themeConfig}
+        cityName={currentCity.name}
+        userMode={userMode}
+        helpRequests={activeRequests}
+        toolLoans={toolLoans}
+        communityEvents={communityEvents}
+        citizenAlerts={citizenAlerts}
+        onMergeCivicData={handleMergeCivicData}
+        onBroadcastNewAlert={handleBroadcastNewAlert}
+      />
+
       {/* Bottom Footer with Municipal, Sovereign & Ethical ALPHABETTE Partnerships */}
-      <footer className={`border-t mt-3 py-3 px-3 text-center transition-colors w-full max-w-full overflow-hidden ${
+      <footer className={`border-t mt-4 py-4 px-3 text-center transition-colors w-full max-w-full overflow-hidden ${
         themeConfig.themeId === 'gold-white'
           ? 'bg-white/95 border-amber-300 text-stone-700'
           : themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark'
           ? 'bg-slate-900 border-slate-800 text-slate-400'
           : 'bg-white border-slate-200 text-slate-500'
       }`}>
-        <div className="max-w-6xl mx-auto space-y-2 text-xs">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto space-y-3 text-xs">
+          {/* LIEN PIED DE PAGE OBLIGATOIRE VERS LE HUB CENTRAL ALPHABETTE */}
+          <div className="py-2 px-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-xs">
+            <a
+              href="http://alphabette.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-extrabold text-xs sm:text-sm text-orange-600 dark:text-amber-400 hover:underline inline-flex items-center justify-center gap-1.5 transition"
+            >
+              <span>Découvrir toutes les applications de la suite sur http://alphabette.fr</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
             <div className="flex items-center gap-1.5">
               <Crown className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
               <span className="font-extrabold text-stone-800 dark:text-stone-200">
@@ -658,12 +929,36 @@ export default function App() {
 
             <div className="flex flex-wrap items-center justify-center gap-2 font-bold text-[11px] sm:text-xs">
               <button
+                id="btn-footer-lgm-geo"
+                onClick={() => setIsSubscriptionModalOpen(true)}
+                className={`cursor-pointer inline-flex items-center gap-1 font-black px-2 py-0.5 rounded shadow-2xs transition ${
+                  lgmGeoStatus.verified && lgmGeoStatus.isLGM
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-500'
+                    : 'bg-stone-900 text-amber-300 border border-amber-400 hover:bg-stone-800'
+                }`}
+                title="1ère année 100% offerte pour les habitants de La Grande-Motte (géolocalisation obligatoire)"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>{lgmGeoStatus.verified && lgmGeoStatus.isLGM ? 'Pass 1 an LGM Validé' : 'Pass 1 an LGM Gratuit'}</span>
+              </button>
+              <span>·</span>
+              <button
+                id="btn-footer-p2p-sync"
+                onClick={() => setIsP2PSyncOpen(true)}
+                className="text-amber-600 dark:text-amber-400 hover:underline cursor-pointer inline-flex items-center gap-1 font-black"
+                title="Synchronisation P2P Décentralisée sans serveur (WebRTC / Wi-Fi local)"
+              >
+                <Radio className="w-3.5 h-3.5 animate-pulse text-amber-500" />
+                <span>Synchro P2P</span>
+              </button>
+              <span>·</span>
+              <button
                 id="btn-footer-sovereign-status"
                 onClick={() => setIsSovereignModalOpen(true)}
                 className="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer inline-flex items-center gap-1 font-extrabold"
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Moteur Souverain</span>
+                <span>Mistral AI Souverain</span>
               </button>
               <span>·</span>
               <button
@@ -672,7 +967,7 @@ export default function App() {
                 className="text-orange-600 dark:text-amber-400 hover:underline cursor-pointer inline-flex items-center gap-1 font-extrabold"
               >
                 <Building2 className="w-3.5 h-3.5" />
-                <span>Tarif Éthique (1€/mois · Pack 3€)</span>
+                <span>Grille Tarifaire (39€ / 59€ · Bouquet 99€/199€)</span>
               </button>
               <span>·</span>
               <button 
@@ -692,12 +987,12 @@ export default function App() {
             </div>
           </div>
 
-          <div className="pt-1.5 border-t border-slate-200/50 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <div className="pt-2 border-t border-slate-200/50 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500 dark:text-slate-400">
             <span>
-              Édité par <strong>ALPHABETTE</strong> (fondée par Valentin RICHAUD) · Zéro pistage publicitaire, respect de la vie privée.
+              Édité par <strong>ALPHABETTE SASU</strong> (fondée par Valentin RICHAUD) · Zéro pistage publicitaire, conformité RGPD stricte.
             </span>
             <span>
-              Hébergement web & données sur serveurs souverains OVH (France) · <span className="font-mono">alphabette.fr / alphabette.eu</span>
+              Hébergement souverain OVH France · Moteur Mistral AI Europe · <span className="font-mono">alphabette.fr</span>
             </span>
           </div>
         </div>

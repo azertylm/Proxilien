@@ -19,7 +19,9 @@ import {
   ShieldCheck,
   Bot,
   Sparkles,
-  Building2
+  Building2,
+  Radio,
+  QrCode
 } from 'lucide-react';
 import { speakText, stopSpeaking } from '../utils/speech';
 
@@ -41,6 +43,9 @@ interface HeaderProps {
   onOpenSovereignStatus?: () => void;
   onOpenSubscriptionModal?: () => void;
   onOpenAIAssistant?: () => void;
+  onOpenP2PSync?: () => void;
+  isLGMVerified?: boolean;
+  onVerifyGeolocation?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -61,6 +66,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSovereignStatus,
   onOpenSubscriptionModal,
   onOpenAIAssistant,
+  onOpenP2PSync,
+  isLGMVerified = false,
+  onVerifyGeolocation,
 }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
@@ -124,31 +132,67 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 text-xs">
-          {/* Sovereign Indicator */}
+          {/* LGM 1-Year Free Pass Status Badge */}
+          {onVerifyGeolocation && (
+            <button
+              id="btn-header-lgm-pass"
+              onClick={onVerifyGeolocation}
+              className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-black text-[11px] sm:text-xs transition cursor-pointer shadow-xs ${
+                isLGMVerified
+                  ? 'bg-emerald-500 text-stone-950 hover:bg-emerald-400 border border-emerald-300'
+                  : 'bg-stone-950 text-white hover:bg-stone-900 border-2 border-amber-300'
+              }`}
+              title="1ère année 100% GRATUITE pour les habitants de La Grande-Motte (avec géolocalisation obligatoire)"
+            >
+              <MapPin className={`w-3.5 h-3.5 ${isLGMVerified ? 'text-stone-950' : 'text-amber-400 animate-bounce'}`} />
+              <span className="hidden md:inline">
+                {isLGMVerified ? 'Pass 1 an LGM Validé' : 'Valider Géoloc LGM (1 an Offert)'}
+              </span>
+              <span className="md:hidden">
+                {isLGMVerified ? 'LGM 1 an OK' : '1 an Offert'}
+              </span>
+            </button>
+          )}
+
+          {/* Mistral AI Sovereign Indicator */}
           {onOpenSovereignStatus && (
             <button
               id="btn-header-sovereign-status"
               onClick={onOpenSovereignStatus}
               className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-100 border border-emerald-400/40 px-2 py-0.5 rounded flex items-center gap-1 font-bold text-[10px] sm:text-xs transition cursor-pointer"
-              title="Architecture IA Hybride, Résiliente & Souveraine ALPHABETTE"
+              title="IA Souveraine Française Mistral AI (Conforme RGPD Native, Zéro Entraînement Public)"
             >
               <ShieldCheck className="w-3 h-3 text-emerald-300" />
-              <span className="hidden sm:inline">IA Souveraine</span>
-              <span className="sm:hidden">Souverain</span>
+              <span className="hidden sm:inline">Mistral AI Souverain</span>
+              <span className="sm:hidden">Mistral AI</span>
             </button>
           )}
 
-          {/* ALPHABETTE Roadmap & Model */}
+          {/* ALPHABETTE Official Pricing & Bouquet */}
           {onOpenSubscriptionModal && (
             <button
               id="btn-header-alphabette-pricing"
               onClick={onOpenSubscriptionModal}
               className="bg-white/15 hover:bg-white/25 text-white border border-white/30 px-2 py-0.5 rounded flex items-center gap-1 font-bold text-[10px] sm:text-xs transition cursor-pointer"
-              title="Feuille de Route & Modèle ALPHABETTE (Pilote Gratuit LGM & Pass 40€/an)"
+              title="Grille Tarifaire Officielle ALPHABETTE (39€/59€ & Bouquet 99€/199€)"
             >
               <Building2 className="w-3 h-3 text-amber-300" />
-              <span className="hidden md:inline">Pilote Gratuit LGM · Pass ALPHABETTE</span>
-              <span className="md:hidden">Pilote Gratuit</span>
+              <span className="hidden md:inline">Tarifs & Bouquet Alphabette</span>
+              <span className="md:hidden">Tarifs</span>
+            </button>
+          )}
+
+          {/* P2P Sync Indicator */}
+          {onOpenP2PSync && (
+            <button
+              id="btn-header-p2p-sync"
+              onClick={onOpenP2PSync}
+              className="bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-300/40 px-2 py-0.5 rounded flex items-center gap-1 font-bold text-[10px] sm:text-xs transition cursor-pointer"
+              title="Synchronisation P2P Décentralisée (WebRTC / Wi-Fi local / QR Code direct)"
+            >
+              <Radio className="w-3 h-3 text-amber-300 animate-pulse" />
+              <span className="hidden sm:inline">Synchro P2P</span>
+              <span className="sm:hidden">P2P</span>
             </button>
           )}
 
@@ -359,6 +403,24 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Bot className="w-4 h-4 text-orange-600 flex-shrink-0" />
                 <span className="hidden xl:inline">Ami IA</span>
+              </button>
+            )}
+
+            {/* P2P WebRTC Direct Sync Button */}
+            {onOpenP2PSync && (
+              <button
+                id="btn-header-p2p-action"
+                onClick={onOpenP2PSync}
+                className={`p-2 sm:px-2.5 sm:py-2 rounded-xl border flex items-center gap-1 text-xs font-black transition cursor-pointer ${
+                  isDark
+                    ? 'bg-stone-900 border-amber-400/60 text-amber-300 hover:bg-stone-800 shadow-xs'
+                    : 'bg-amber-50 border-amber-400 text-amber-950 hover:bg-amber-100 shadow-xs'
+                }`}
+                title="Synchronisation P2P Décentralisée : Échangez fiches civiques et alertes chiffrées en direct sur le Wi-Fi (WebRTC / QR)"
+                aria-label="Synchronisation locale P2P"
+              >
+                <Radio className="w-4 h-4 text-amber-600 flex-shrink-0 animate-pulse" />
+                <span className="hidden xl:inline">Synchro P2P</span>
               </button>
             )}
 

@@ -1,64 +1,71 @@
-import { GoogleGenAI } from "@google/genai";
+/**
+ * Routeur IA Souverain ALPHABETTE — Exclusif MISTRAL AI (France / Europe)
+ * 
+ * Conformité RGPD Native & Souveraineté Européenne :
+ * - Entreprise française Mistral AI, infrastructures hébergées dans l'Union Européenne
+ * - Aucune donnée ni requête n'est utilisée pour l'entraînement public des modèles
+ * - Trois niveaux d'accès standardisés :
+ *   1. Période d'essai (7 jours offerts avec la clé propriétaire Alphabette)
+ *   2. Mode BYOK (Bring Your Own Key) avec clé personnelle Mistral
+ *   3. Mode managé (Clé Alphabette incluse)
+ * - Support direct des environnements :
+ *   - Local Mac (Ollama / Metal via endpoint compatible /v1)
+ *   - Production Cloud officiel Mistral (https://api.mistral.ai/v1)
+ */
 
-export type AIProvider = 'gemini' | 'hybrid_mistral' | 'local_only' | 'cloud_mistral' | 'auto';
+export type MistralAccessTier = 'trial' | 'byok' | 'managed' | 'local_mac';
 
 export interface AIRequestPayload {
   prompt: string;
   systemInstruction?: string;
-  provider?: AIProvider;
+  tier?: MistralAccessTier;
+  apiKey?: string;
+  baseUrl?: string;
+  model?: string;
   temperature?: number;
   maxTokens?: number;
 }
 
 export interface AIResponsePayload {
   text: string;
-  providerUsed: 'gemini' | 'local_mistral' | 'cloud_mistral' | 'mock_fallback';
+  providerUsed: 'cloud_mistral' | 'local_mistral' | 'byok_mistral' | 'mock_fallback';
   sovereign: boolean;
+  rgpdCompliant: boolean;
   model: string;
   latencyMs: number;
   failover: boolean;
   failoverReason?: string;
   timestamp: string;
+  accessTier: MistralAccessTier;
   hostingInfo: {
     publisher: string;
     founder: string;
     serverLocation: string;
+    hubUrl: string;
+    compliance: string;
   };
 }
 
-let geminiClient: GoogleGenAI | null = null;
-
-// Enregistre les modèles temporairement saturés (HTTP 429) avec un timestamp d'expiration
+// Cooldown des modèles temporairement saturés (429 Rate Limit)
 const mistralModelCooldowns = new Map<string, number>();
 
-function getGeminiClient(): GoogleGenAI {
-  if (!geminiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not defined in environment.");
-    }
-    geminiClient = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
-    });
-  }
-  return geminiClient;
-}
-
 /**
- * Résout de manière sécurisée les identifiants Mistral AI.
- * Détecte si l'utilisateur a accidentellement collé sa clé API dans MISTRAL_MODEL,
- * et privilégie un modèle résilient et à haute disponibilité (open-mistral-7b).
+ * Résout les identifiants Mistral de manière standardisée
+ * Privilégie AI_BASE_URL, AI_API_KEY et MISTRAL_MODEL
  */
-export function getMistralCredentials(): { apiKey: string | null; model: string } {
-  const rawKey = (process.env.MISTRAL_API_KEY || "").trim();
-  const rawModel = (process.env.MISTRAL_MODEL || "").trim();
+export function getMistralCredentials(): {
+  baseUrl: string;
+  apiKey: string | null;
+  model: string;
+  localUrl: string;
+  localModel: string;
+} {
+  const baseUrl = (process.env.AI_BASE_URL || 'https://api.mistral.ai/v1').replace(/\/+$/, '');
+  
+  // Résolution clé API (support AI_API_KEY et MISTRAL_API_KEY)
+  const rawKey = (process.env.AI_API_KEY || process.env.MISTRAL_API_KEY || '').trim();
+  const rawModel = (process.env.MISTRAL_MODEL || '').trim();
 
-  // Détecte une chaîne qui ressemble à une clé d'API (alphanumérique 24-64 caractères sans tiret de modèle)
   const isKeyPattern = (str: string) =>
     /^[A-Za-z0-9_-]{24,64}$/.test(str) &&
     !str.startsWith('mistral-') &&
@@ -68,15 +75,13 @@ export function getMistralCredentials(): { apiKey: string | null; model: string 
     !str.startsWith('pixtral-');
 
   let resolvedKey: string | null = null;
-  // Par défaut, open-mistral-7b est beaucoup plus résilient sur les clés développeur que mistral-small-latest (qui subit souvent des 429)
-  let resolvedModel = 'open-mistral-7b';
+  let resolvedModel = 'mistral-small-latest';
 
-  // 1. Clé normale
   if (rawKey && rawKey !== 'MY_MISTRAL_API_KEY' && rawKey !== '""') {
     resolvedKey = rawKey;
   }
 
-  // 2. Clé accidentellement saisie dans la variable MISTRAL_MODEL
+  // Détection si l'utilisateur a collé sa clé dans la variable MISTRAL_MODEL
   if (isKeyPattern(rawModel)) {
     if (!resolvedKey) {
       resolvedKey = rawModel;
@@ -86,90 +91,61 @@ export function getMistralCredentials(): { apiKey: string | null; model: string 
     resolvedModel = rawModel;
   }
 
-  return { apiKey: resolvedKey, model: resolvedModel };
+  const localUrl = (process.env.LOCAL_AI_URL || 'http://localhost:11434/v1').replace(/\/+$/, '');
+  const localModel = process.env.LOCAL_AI_MODEL || 'mistral-nemo';
+
+  return {
+    baseUrl,
+    apiKey: resolvedKey,
+    model: resolvedModel,
+    localUrl,
+    localModel,
+  };
 }
 
 /**
- * Phase 1 : Prototypage & Conception via Google Gemini
- * Avec basculement automatique inter-modèles en cas de surcharge temporaire 503 ("high demand").
+ * Appel à l'API Mistral (Cloud Officiel ou Endpoint Compatible Mac Ollama/Metal)
  */
-async function callGemini(
-  prompt: string,
-  systemInstruction?: string,
-  temperature = 0.7
-): Promise<{ text: string; model: string }> {
-  const ai = getGeminiClient();
-
-  // Liste de modèles supportés ordonnée par préférence pour garantir la résilience
-  const candidateModels = [
-    'gemini-3.8-flash',
-    'gemini-2.5-flash',
-    'gemini-flash-latest',
-    'gemini-3.1-flash-lite',
-  ];
-
-  let lastError: unknown = null;
-
-  for (const modelName of candidateModels) {
-    try {
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          temperature,
-          systemInstruction: systemInstruction || `Tu es l'assistant de conception, de support et d'administration de ProxiLien, plateforme d'entraide locale et de communication citoyenne éditée par ALPHABETTE SASU (fondée par Valentin RICHAUD).
-
-FEUILLE DE ROUTE & STRATÉGIE DE DÉPLOIEMENT :
-1. Phase pilote (Année 1) : Test grandeur nature 100 % gratuit pour tous les habitants, aînés, associations et commerces de La Grande-Motte.
-2. Déploiement intercommunal (horizon 3-4 mois) :
-   - Commercialisation de licences municipales aux mairies et collectivités (tableau de bord d'alertes citoyennes, valorisation des commerces locaux, canal d'information directe sans dépendance aux GAFAM).
-   - Module individuel citoyen : accès direct pour usagers hors communes abonnées ou fonctionnalités avancées premium dans le Pass ALPHABETTE (40 € TTC / an avec la suite souveraine).
-
-ENGAGEMENTS : Respect absolu de la vie privée (zéro traçage, zéro cookie publicitaire, hébergement souverain OVH France). Ton chaleureux, civique, clair et bienveillant.`,
-        },
-      });
-
-      const text = response.text || "";
-      if (text && text.trim().length > 0) {
-        return { text, model: modelName };
-      }
-    } catch (err: unknown) {
-      lastError = err;
-      const msg = (err as Error)?.message || String(err);
-      console.info(`[AIRouter] Modèle Gemini ${modelName} temporairement indisponible (${msg}), tentative modèle alternatif...`);
-    }
-  }
-
-  throw lastError || new Error("Tous les modèles Gemini sont momentanément indisponibles.");
-}
-
-/**
- * Phase 2 : Moteur Local Souverain (Ollama / vLLM)
- * Exécuté sur machine dédiée haute performance.
- * Timeout strict de 3500ms pour détecter immédiatement une coupure ou panne.
- */
-async function callLocalAI(
-  prompt: string,
-  systemInstruction?: string,
-  timeoutMs = 3500
-): Promise<{ text: string; model: string }> {
-  const localUrl = process.env.LOCAL_AI_URL || 'http://localhost:11434';
-  const model = process.env.LOCAL_AI_MODEL || 'mistral-nemo';
+async function executeMistralChat(params: {
+  baseUrl: string;
+  apiKey?: string;
+  model: string;
+  prompt: string;
+  systemInstruction?: string;
+  temperature?: number;
+  timeoutMs?: number;
+}): Promise<{ text: string; model: string }> {
+  const { baseUrl, apiKey, model, prompt, systemInstruction, temperature = 0.7, timeoutMs = 8000 } = params;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
+
+  // Détection URL standard chat/completions
+  const endpoint = baseUrl.endsWith('/v1')
+    ? `${baseUrl}/chat/completions`
+    : baseUrl.includes('/v1/')
+    ? `${baseUrl}/chat/completions`
+    : `${baseUrl}/v1/chat/completions`;
+
   try {
-    const res = await fetch(`${localUrl.replace(/\/+$/, '')}/api/chat`, {
+    const res = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         model,
         messages: [
           ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
-          { role: 'user', content: prompt }
+          { role: 'user', content: prompt },
         ],
-        stream: false,
+        temperature,
       }),
       signal: controller.signal,
     });
@@ -177,51 +153,48 @@ async function callLocalAI(
     clearTimeout(timer);
 
     if (!res.ok) {
-      throw new Error(`Serveur local HTTP ${res.status}: ${res.statusText}`);
+      const errBody = await res.text();
+      if (res.status === 429) {
+        mistralModelCooldowns.set(model, Date.now() + 60_000);
+      }
+      throw new Error(`Mistral HTTP ${res.status}: ${errBody || res.statusText}`);
     }
 
-    const data = (await res.json()) as { message?: { content?: string }; response?: string };
-    const text = data.message?.content || data.response || "";
-    return { text, model: `${model} (Local Ollama/vLLM)` };
+    const data = (await res.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const text = data.choices?.[0]?.message?.content || '';
+
+    if (!text.trim()) {
+      throw new Error("Réponse vide reçue de l'API Mistral");
+    }
+
+    // Réinitialiser le cooldown en cas de succès
+    mistralModelCooldowns.delete(model);
+    return { text, model };
   } catch (err: unknown) {
     clearTimeout(timer);
-    const error = err as Error;
-    if (error.name === 'AbortError') {
-      throw new Error(`Délai dépassé sur serveur local (${timeoutMs}ms) - Basculement secours`);
-    }
-    throw new Error(`Indisponibilité serveur local (${error.message}) - Basculement secours`);
+    throw err;
   }
 }
 
 /**
- * Phase 3 : Résilience & Secours Cloud Européen (Mistral AI API Officielle)
- * Hébergé en France / Europe, garantit la continuité absolue du service.
- * Gère proactivement les quotas et rate limits (HTTP 429) avec un pool de modèles résilients.
+ * Appel avec pool de modèles résilients Mistral (gestion transparente des quotas)
  */
-async function callMistralCloud(
-  prompt: string,
-  systemInstruction?: string,
-  temperature = 0.7
-): Promise<{ text: string; model: string }> {
-  const { apiKey, model } = getMistralCredentials();
-
-  if (!apiKey) {
-    throw new Error("MISTRAL_API_KEY non configurée pour le repli Cloud Européen.");
-  }
-
+async function callMistralWithFallback(params: {
+  baseUrl: string;
+  apiKey: string;
+  preferredModel: string;
+  prompt: string;
+  systemInstruction?: string;
+  temperature?: number;
+}): Promise<{ text: string; model: string }> {
   const now = Date.now();
-  // Vérifier si un blocage global temporaire de compte est actif
-  const globalCooldown = mistralModelCooldowns.get('__global__') || 0;
-  if (globalCooldown > now) {
-    throw new Error(`Mistral Cloud temporairement en cooldown suite à une limitation de débit.`);
-  }
+  const pool = [params.preferredModel, 'open-mistral-7b', 'open-mistral-nemo', 'mistral-small-latest'];
+  const uniqueModels = Array.from(new Set(pool));
 
-  // Modèles candidats ordonnés pour privilégier la disponibilité et contourner les 429
-  const candidatePool = [model, 'open-mistral-7b', 'open-mistral-nemo', 'mistral-small-latest'];
-  const uniqueModels = Array.from(new Set(candidatePool));
-
-  // Priorité absolue aux modèles non en cooldown (non limités par 429)
-  const modelsToTry = uniqueModels.sort((a, b) => {
+  // Priorité aux modèles non limités par 429
+  const sortedModels = uniqueModels.sort((a, b) => {
     const aCool = (mistralModelCooldowns.get(a) || 0) > now ? 1 : 0;
     const bCool = (mistralModelCooldowns.get(b) || 0) > now ? 1 : 0;
     return aCool - bCool;
@@ -229,322 +202,258 @@ async function callMistralCloud(
 
   let lastError: Error | null = null;
 
-  for (const currentModel of modelsToTry) {
-    // Si ce modèle est en cooldown et qu'un modèle disponible a déjà été tenté
-    const isCool = (mistralModelCooldowns.get(currentModel) || 0) > now;
-    if (isCool && modelsToTry.some(m => (mistralModelCooldowns.get(m) || 0) <= now)) {
-      continue;
-    }
-
+  for (const model of sortedModels) {
     try {
-      const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: currentModel,
-          messages: [
-            ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
-            { role: 'user', content: prompt }
-          ],
-          temperature,
-        }),
+      const result = await executeMistralChat({
+        baseUrl: params.baseUrl,
+        apiKey: params.apiKey,
+        model,
+        prompt: params.prompt,
+        systemInstruction: params.systemInstruction,
+        temperature: params.temperature,
+        timeoutMs: 6500,
       });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-
-        // 1. Détection HTTP 429 Rate Limit (Free Tier ou quota ponctuel)
-        if (res.status === 429) {
-          // Mettre ce modèle spécifique en cooldown 90 secondes
-          mistralModelCooldowns.set(currentModel, Date.now() + 90_000);
-          console.info(`[AIRouter] Modèle Mistral ${currentModel} saturé (429 Rate Limit), basculement transparent...`);
-          lastError = new Error(`Modèle Mistral ${currentModel} temporairement limité (HTTP 429)`);
-          continue;
-        }
-
-        // 2. Détection problème d'authentification
-        if (res.status === 401 || res.status === 403) {
-          mistralModelCooldowns.set('__global__', Date.now() + 180_000);
-          throw new Error(`Accès Mistral Cloud non autorisé (HTTP ${res.status})`);
-        }
-
-        throw new Error(`Mistral Cloud HTTP ${res.status}: ${errorText}`);
-      }
-
-      const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-      const text = data.choices?.[0]?.message?.content || "";
-      
-      // Succès : lever le cooldown sur ce modèle
-      mistralModelCooldowns.delete(currentModel);
-      return { text, model: `${currentModel} (Mistral Cloud Europe)` };
-    } catch (err: unknown) {
+      return result;
+    } catch (err) {
       lastError = err as Error;
-      if (lastError.message.includes('non autorisé')) {
-        break;
-      }
+      console.info(`[MistralRouter] Modèle ${model} indisponible (${lastError.message}), essai modèle suivant...`);
     }
   }
 
-  throw lastError || new Error("Mistral Cloud momentanément indisponible.");
+  throw lastError || new Error("Tous les modèles Mistral sont momentanément occupés.");
 }
 
 /**
- * Générateur local de réponse de secours résiliente contextualisée.
- * Garantit qu'aucun aîné ni jeune bénévole ne soit bloqué par un écran d'erreur
- * si toutes les connexions IA externes sont simultanément coupées.
+ * Générateur local de réponse de secours citoyenne et bienveillante ALPHABETTE
+ * Garantit qu'un aîné ou un bénévole n'est JAMAIS bloqué même sans connexion
  */
-function generateResilientLocalFallback(prompt: string, failoverReason: string): AIResponsePayload {
+function generateResilientLocalFallback(
+  prompt: string,
+  failoverReason: string,
+  accessTier: MistralAccessTier
+): AIResponsePayload {
   const lower = prompt.toLowerCase();
-  let text = "";
+  let text = '';
 
-  if (lower.includes("course") || lower.includes("pain") || lower.includes("pharmacie") || lower.includes("marché")) {
-    text = "Bonjour ! ProxiLien a bien enregistré votre demande pour les courses et fournitures du quotidien. 🥖🛒 Plusieurs jeunes voisins solidaires de La Grande-Motte (Le Couchant, Le Ponant, Centre-Ville) sont inscrits pour donner un coup de main avec bienveillance. Votre demande est visible par les bénévoles vérifiés.";
-  } else if (lower.includes("brico") || lower.includes("ampoule") || lower.includes("outil") || lower.includes("jardin") || lower.includes("panne")) {
-    text = "Bonjour ! ProxiLien vous accompagne pour tous les petits coups de main et bricolages de proximité. 🔨🌱 Vous pouvez également utiliser le module 'Prêt d'Outils' pour emprunter gratuitement du matériel ou solliciter le passage d'un voisin qualifié de votre quartier.";
-  } else if (lower.includes("compagnie") || lower.includes("visite") || lower.includes("parler") || lower.includes("promenade") || lower.includes("solitude")) {
-    text = "Bonjour ! Le lien humain et intergénérationnel est la priorité absolue de ProxiLien et de la charte éthique ALPHABETTE. ☕👥 Un veilleur de quartier peut vous contacter pour partager un moment convivial, une discussion ou une marche douce le long de la plage au Point Zéro.";
-  } else if (lower.includes("urgence") || lower.includes("sos") || lower.includes("chute") || lower.includes("malaise")) {
-    text = "⚠️ ALERTE DE SÉCURITÉ : En cas d'urgence médicale vitale, composez immédiatement le SAMU (15) ou les Pompiers (18). Vous pouvez également appuyer sur le bouton rouge SOS en haut de l'application pour alerter instantanément vos 3 veilleurs de confiance.";
-  } else if (lower.includes("tarif") || lower.includes("prix") || lower.includes("abonnement") || lower.includes("licence") || lower.includes("mairie") || lower.includes("commune") || lower.includes("feuille de route") || lower.includes("pass")) {
-    text = "Bonjour ! Dans le cadre de notre feuille de route ALPHABETTE SASU : la Phase Pilote (Année 1) est 100% gratuite pour tous les habitants, aînés, associations et commerces de La Grande-Motte. D'ici 3-4 mois, nous ouvrons le déploiement intercommunal avec des Licences Municipales pour les mairies (tableau de bord d'alertes citoyennes, canal direct sans GAFAM) et un Pass ALPHABETTE citoyen à 40 € TTC/an donnant accès à ProxiLien hors communes abonnées et à nos autres applications souveraines (LIDARSOL, OSOLAR). Zéro publicité, données hébergées en France.";
+  if (lower.includes('course') || lower.includes('pain') || lower.includes('pharmacie') || lower.includes('marché')) {
+    text =
+      "Bonjour ! ProxiLien a bien enregistré votre demande pour les courses et fournitures à La Grande-Motte. 🥖🛒 Nos jeunes voisins solidaires (Quartiers Couchant, Ponant, Centre-Ville) sont notifiés avec bienveillance. Votre demande est protégée conformément aux normes RGPD.";
+  } else if (
+    lower.includes('brico') ||
+    lower.includes('ampoule') ||
+    lower.includes('outil') ||
+    lower.includes('jardin') ||
+    lower.includes('panne')
+  ) {
+    text =
+      "Bonjour ! ProxiLien vous accompagne pour tous les petits coups de main et bricolages de proximité à La Grande-Motte. 🔨🌱 Vous pouvez également utiliser le module 'Prêt d'Outils' pour emprunter gratuitement du matériel ou solliciter le passage d'un voisin qualifié de votre quartier.";
+  } else if (
+    lower.includes('compagnie') ||
+    lower.includes('visite') ||
+    lower.includes('parler') ||
+    lower.includes('promenade') ||
+    lower.includes('solitude')
+  ) {
+    text =
+      "Bonjour ! Le lien humain et intergénérationnel est la priorité absolue de ProxiLien et de la charte éthique ALPHABETTE. ☕👥 Un veilleur de quartier peut vous contacter pour partager un moment convivial, une discussion ou une marche douce le long de la plage au Point Zéro.";
+  } else if (lower.includes('urgence') || lower.includes('sos') || lower.includes('chute') || lower.includes('malaise')) {
+    text =
+      "⚠️ ALERTE DE SÉCURITÉ : En cas d'urgence médicale vitale, composez immédiatement le SAMU (15) ou les Pompiers (18). Vous pouvez également appuyer sur le bouton rouge SOS en haut de l'application pour alerter instantanément vos 3 veilleurs de confiance de La Grande-Motte.";
+  } else if (
+    lower.includes('tarif') ||
+    lower.includes('prix') ||
+    lower.includes('abonnement') ||
+    lower.includes('pass') ||
+    lower.includes('bouquet') ||
+    lower.includes('grande-motte')
+  ) {
+    text =
+      "Bonjour ! Voici la grille officielle ALPHABETTE :\n• Habitants de La Grande-Motte : 1ère année 100 % GRATUITE (avec géolocalisation obligatoire).\n• Formule BYOK (Clé client Mistral) : 39 € / an.\n• Formule Confort (Clé Alphabette incluse) : 59 € / an (après 7 jours d'essai offerts).\n• Pass Bouquet BYOK (Toutes les applications) : 99 € / an.\n• Pass Bouquet Intégral (Toutes les applications + clés gérées) : 199 € / an.\nDécouvrez toutes les applications de la suite sur http://alphabette.fr.";
   } else {
-    text = "Bonjour ! L'Ami Bienveillant ProxiLien est à votre écoute. Votre démarche s'inscrit dans les valeurs d'entraide, de respect de la vie privée et de proximité citoyenne portées par ALPHABETTE à La Grande-Motte. N'hésitez pas à publier votre besoin ou à rejoindre une activité conviviale.";
+    text =
+      "Bonjour ! L'assistant citoyen ProxiLien est à votre service. Votre échange s'inscrit dans les valeurs de souveraineté numérique française (Mistral AI), de respect strict du RGPD et d'entraide de proximité portées par ALPHABETTE SASU. N'hésitez pas à solliciter vos voisins ou à proposer votre aide.";
   }
 
   return {
     text,
     providerUsed: 'mock_fallback',
     sovereign: true,
-    model: 'Moteur Résilient Local ALPHABETTE',
-    latencyMs: 30,
+    rgpdCompliant: true,
+    model: 'Moteur Résilient Local Souverain (ALPHABETTE)',
+    latencyMs: 25,
     failover: true,
     failoverReason,
     timestamp: new Date().toISOString(),
+    accessTier,
     hostingInfo: {
-      publisher: 'ALPHABETTE',
+      publisher: 'ALPHABETTE SASU',
       founder: 'Valentin RICHAUD',
       serverLocation: 'Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)',
+      hubUrl: 'http://alphabette.fr',
+      compliance: 'RGPD Native · Entreprise française Mistral AI · Aucune réutilisation des données',
     },
   };
 }
 
 /**
- * Routeur IA Centralisé ALPHABETTE (Strategy & Provider Pattern)
- * Résilience transparente : Local (Phase 2) -> Mistral Cloud (Phase 3) -> Gemini (Phase 1) -> Moteur Résilient Local
+ * Gestionnaire principal des requêtes IA Souveraines ALPHABETTE
+ * Exclusivité absolue Mistral AI (Local Mac Ollama ou Mistral Cloud API Europe)
  */
 export async function handleAIRequest(payload: AIRequestPayload): Promise<AIResponsePayload> {
   const startTime = Date.now();
-  const configuredProvider = (payload.provider || process.env.AI_PROVIDER || 'gemini') as AIProvider;
-  const timeoutLocal = Number(process.env.TIMEOUT_LOCAL_MS) || 3500;
-  const mistralCreds = getMistralCredentials();
+  const creds = getMistralCredentials();
+  const tier: MistralAccessTier = payload.tier || 'trial';
 
   const hostingInfo = {
-    publisher: 'ALPHABETTE',
+    publisher: 'ALPHABETTE SASU',
     founder: 'Valentin RICHAUD',
     serverLocation: 'Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)',
+    hubUrl: 'http://alphabette.fr',
+    compliance: 'RGPD Native · Entreprise française Mistral AI · Aucune réutilisation des données',
   };
 
-  // 1. Fournisseur explicite Gemini (Phase 1 Prototypage actif)
-  if (configuredProvider === 'gemini') {
+  const systemInstruction =
+    payload.systemInstruction ||
+    `Tu es l'assistant de conception, de support et d'administration de ProxiLien, la plateforme d'entraide locale et de communication citoyenne éditée par ALPHABETTE SASU (fondée par Valentin RICHAUD).
+Souveraineté exclusive : Mistral AI (France / Europe). Aucune donnée d'utilisateur n'est réutilisée pour l'entraînement.
+Gratuité : 1ère année 100 % offerte pour tous les habitants de La Grande-Motte (avec géolocalisation obligatoire).
+Grille tarifaire : Formule BYOK 39 € / an, Formule Confort 59 € / an, Bouquet BYOK 99 € / an, Bouquet Intégral 199 € / an.
+Lien hub : Découvrir toutes les applications de la suite sur http://alphabette.fr.`;
+
+  // 1. Mode Local Mac (Ollama / Metal sur http://localhost:11434/v1)
+  if (tier === 'local_mac' || payload.baseUrl?.includes('localhost') || payload.baseUrl?.includes('127.0.0.1')) {
+    const localUrl = payload.baseUrl || creds.localUrl;
+    const localModel = payload.model || creds.localModel;
     try {
-      const result = await callGemini(payload.prompt, payload.systemInstruction, payload.temperature);
+      const res = await executeMistralChat({
+        baseUrl: localUrl,
+        model: localModel,
+        prompt: payload.prompt,
+        systemInstruction,
+        temperature: payload.temperature,
+        timeoutMs: 4000,
+      });
+
       return {
-        text: result.text,
-        providerUsed: 'gemini',
-        sovereign: false,
-        model: result.model,
-        latencyMs: Date.now() - startTime,
-        failover: false,
-        timestamp: new Date().toISOString(),
-        hostingInfo,
-      };
-    } catch (geminiError: unknown) {
-      const geminiMsg = (geminiError as Error).message;
-      console.info("[AIRouter] Gemini non disponible, basculement vers le relais Mistral Cloud...", geminiMsg);
-
-      // Tentative de secours Cloud Mistral si configuré
-      if (mistralCreds.apiKey) {
-        try {
-          const mistralResult = await callMistralCloud(payload.prompt, payload.systemInstruction, payload.temperature);
-          return {
-            text: mistralResult.text,
-            providerUsed: 'cloud_mistral',
-            sovereign: true,
-            model: mistralResult.model,
-            latencyMs: Date.now() - startTime,
-            failover: true,
-            failoverReason: `Repli depuis Gemini : ${geminiMsg}`,
-            timestamp: new Date().toISOString(),
-            hostingInfo,
-          };
-        } catch (mistralErr) {
-          console.info("[AIRouter] Relais Mistral Cloud non disponible:", (mistralErr as Error).message);
-        }
-      }
-
-      // Repli gracieux souverain local si toutes les APIs distantes sont indisponibles
-      return generateResilientLocalFallback(
-        payload.prompt,
-        `Gemini indisponible (${geminiMsg}) + Mistral secours non opérationnel`
-      );
-    }
-  }
-
-  // 2. Fournisseur explicite Cloud Mistral
-  if (configuredProvider === 'cloud_mistral') {
-    try {
-      const mistralResult = await callMistralCloud(payload.prompt, payload.systemInstruction, payload.temperature);
-      return {
-        text: mistralResult.text,
-        providerUsed: 'cloud_mistral',
-        sovereign: true,
-        model: mistralResult.model,
-        latencyMs: Date.now() - startTime,
-        failover: false,
-        timestamp: new Date().toISOString(),
-        hostingInfo,
-      };
-    } catch (mistralError: unknown) {
-      const mistralMsg = (mistralError as Error).message;
-      console.info("[AIRouter] Mistral Cloud saturé ou indisponible, repli vers Gemini...", mistralMsg);
-
-      try {
-        const geminiResult = await callGemini(payload.prompt, payload.systemInstruction, payload.temperature);
-        return {
-          text: geminiResult.text,
-          providerUsed: 'gemini',
-          sovereign: false,
-          model: geminiResult.model,
-          latencyMs: Date.now() - startTime,
-          failover: true,
-          failoverReason: `Repli depuis Mistral Cloud: ${mistralMsg}`,
-          timestamp: new Date().toISOString(),
-          hostingInfo,
-        };
-      } catch (geminiError: unknown) {
-        return generateResilientLocalFallback(payload.prompt, `Mistral et Gemini indisponibles`);
-      }
-    }
-  }
-
-  // 3. Fournisseur local strict
-  if (configuredProvider === 'local_only') {
-    try {
-      const localResult = await callLocalAI(payload.prompt, payload.systemInstruction, timeoutLocal);
-      return {
-        text: localResult.text,
+        text: res.text,
         providerUsed: 'local_mistral',
         sovereign: true,
-        model: localResult.model,
+        rgpdCompliant: true,
+        model: `${res.model} (Mac Local Metal/Ollama)`,
         latencyMs: Date.now() - startTime,
         failover: false,
         timestamp: new Date().toISOString(),
+        accessTier: 'local_mac',
         hostingInfo,
       };
-    } catch (localError: unknown) {
-      const localMsg = (localError as Error).message;
-      console.info("[AIRouter] Serveur local strict non détecté, relais vers secours...", localMsg);
+    } catch (localErr) {
+      const msg = (localErr as Error).message;
+      console.info(`[MistralRouter] Environnement local Mac non joignable (${msg}), repli vers Mistral Cloud...`);
+      // Basculement vers Mistral Cloud si clé disponible
+    }
+  }
 
-      // Si secours Mistral disponible
-      if (mistralCreds.apiKey) {
+  // 2. Mode BYOK (Bring Your Own Key) : l'utilisateur a renseigné sa propre clé Mistral
+  if (tier === 'byok' && payload.apiKey) {
+    const userKey = payload.apiKey.trim();
+    const userModel = payload.model || creds.model;
+    const userBaseUrl = payload.baseUrl || creds.baseUrl;
+
+    try {
+      const res = await callMistralWithFallback({
+        baseUrl: userBaseUrl,
+        apiKey: userKey,
+        preferredModel: userModel,
+        prompt: payload.prompt,
+        systemInstruction,
+        temperature: payload.temperature,
+      });
+
+      return {
+        text: res.text,
+        providerUsed: 'byok_mistral',
+        sovereign: true,
+        rgpdCompliant: true,
+        model: `${res.model} (BYOK Utilisateur)`,
+        latencyMs: Date.now() - startTime,
+        failover: false,
+        timestamp: new Date().toISOString(),
+        accessTier: 'byok',
+        hostingInfo,
+      };
+    } catch (byokErr) {
+      const msg = (byokErr as Error).message;
+      console.info(`[MistralRouter] Erreur avec la clé BYOK (${msg})`);
+      // Si la clé personnelle de l'utilisateur a un souci, tenter la clé Alphabette si configurée ou repli gracieux
+      if (creds.apiKey) {
         try {
-          const mistralResult = await callMistralCloud(payload.prompt, payload.systemInstruction, payload.temperature);
+          const fallbackRes = await callMistralWithFallback({
+            baseUrl: creds.baseUrl,
+            apiKey: creds.apiKey,
+            preferredModel: creds.model,
+            prompt: payload.prompt,
+            systemInstruction,
+            temperature: payload.temperature,
+          });
+
           return {
-            text: mistralResult.text,
+            text: fallbackRes.text,
             providerUsed: 'cloud_mistral',
             sovereign: true,
-            model: mistralResult.model,
+            rgpdCompliant: true,
+            model: `${fallbackRes.model} (Secours Clé Alphabette)`,
             latencyMs: Date.now() - startTime,
             failover: true,
-            failoverReason: `Repli serveur local: ${localMsg}`,
+            failoverReason: `Clé BYOK limitée : ${msg}`,
             timestamp: new Date().toISOString(),
+            accessTier: 'byok',
             hostingInfo,
           };
         } catch {
-          // Continuer vers Gemini
+          // Pass to local fallback
         }
       }
 
-      try {
-        const geminiResult = await callGemini(payload.prompt, payload.systemInstruction, payload.temperature);
-        return {
-          text: geminiResult.text,
-          providerUsed: 'gemini',
-          sovereign: false,
-          model: geminiResult.model,
-          latencyMs: Date.now() - startTime,
-          failover: true,
-          failoverReason: `Repli serveur local: ${localMsg}`,
-          timestamp: new Date().toISOString(),
-          hostingInfo,
-        };
-      } catch {
-        return generateResilientLocalFallback(payload.prompt, `Serveur local, Mistral et Gemini indisponibles`);
-      }
+      return generateResilientLocalFallback(payload.prompt, `Clé BYOK non opérationnelle : ${msg}`, 'byok');
     }
   }
 
-  // 4. Stratégie Hybride Souveraine (Phase 2 Local + Phase 3 Secours Cloud Européen)
-  // Tente d'abord le serveur local ; si échec (timeout 3.5s ou coupure), bascule vers Mistral Cloud sans bruit.
-  let failoverReason: string | undefined;
-  try {
-    const localResult = await callLocalAI(payload.prompt, payload.systemInstruction, timeoutLocal);
-    return {
-      text: localResult.text,
-      providerUsed: 'local_mistral',
-      sovereign: true,
-      model: localResult.model,
-      latencyMs: Date.now() - startTime,
-      failover: false,
-      timestamp: new Date().toISOString(),
-      hostingInfo,
-    };
-  } catch (localError: unknown) {
-    failoverReason = (localError as Error).message;
-    console.info(`[AIRouter] Basculement de résilience : ${failoverReason}`);
-  }
-
-  // Secours Cloud Européen Mistral AI
-  if (mistralCreds.apiKey) {
+  // 3. Mode Période d'Essai (7 jours offerts) ou Mode Managé (Clé Alphabette propriétaire)
+  if (creds.apiKey) {
     try {
-      const mistralResult = await callMistralCloud(payload.prompt, payload.systemInstruction, payload.temperature);
+      const preferredModel = payload.model || creds.model;
+      const res = await callMistralWithFallback({
+        baseUrl: creds.baseUrl,
+        apiKey: creds.apiKey,
+        preferredModel,
+        prompt: payload.prompt,
+        systemInstruction,
+        temperature: payload.temperature,
+      });
+
       return {
-        text: mistralResult.text,
+        text: res.text,
         providerUsed: 'cloud_mistral',
         sovereign: true,
-        model: mistralResult.model,
+        rgpdCompliant: true,
+        model: `${res.model} (Mistral AI Europe)`,
         latencyMs: Date.now() - startTime,
-        failover: true,
-        failoverReason,
+        failover: false,
         timestamp: new Date().toISOString(),
+        accessTier: tier,
         hostingInfo,
       };
-    } catch (mistralError: unknown) {
-      failoverReason = `${failoverReason} -> Mistral Cloud: ${(mistralError as Error).message}`;
-      console.info(`[AIRouter] Relais Mistral Cloud en pause, relais vers Gemini : ${failoverReason}`);
+    } catch (mistralErr) {
+      const msg = (mistralErr as Error).message;
+      console.warn(`[MistralRouter] Erreur Cloud Mistral (${msg})`);
+      return generateResilientLocalFallback(payload.prompt, `Mistral Cloud temporairement saturé : ${msg}`, tier);
     }
   }
 
-  // Repli vers Gemini pour garantir la continuité
-  try {
-    const geminiResult = await callGemini(payload.prompt, payload.systemInstruction, payload.temperature);
-    return {
-      text: geminiResult.text,
-      providerUsed: 'gemini',
-      sovereign: false,
-      model: geminiResult.model,
-      latencyMs: Date.now() - startTime,
-      failover: true,
-      failoverReason: failoverReason || "Serveur local et Mistral non disponibles, exécution sur Gemini",
-      timestamp: new Date().toISOString(),
-      hostingInfo,
-    };
-  } catch (geminiError: unknown) {
-    failoverReason = `${failoverReason} -> Gemini: ${(geminiError as Error).message}`;
-    console.info(`[AIRouter] Activation du moteur résilient local ALPHABETTE : ${failoverReason}`);
-    return generateResilientLocalFallback(payload.prompt, failoverReason);
-  }
+  // 4. Aucun identifiant distant disponible (mode hors-ligne ou clé non encore renseignée)
+  return generateResilientLocalFallback(
+    payload.prompt,
+    "Moteur local souverain d'attente (Clé Mistral en cours d'activation)",
+    tier
+  );
 }

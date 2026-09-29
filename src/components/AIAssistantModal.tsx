@@ -53,13 +53,13 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     {
       id: 'welcome',
       sender: 'assistant',
-      text: `Bonjour ! Je suis votre Ami Bienveillant ProxiLien pour la ville de ${currentCity.name}. Comment puis-je vous aider aujourd'hui ?`,
+      text: `Bonjour ! Je suis votre Ami Bienveillant ProxiLien pour la ville de ${currentCity.name}, propulsé par la technologie souveraine française Mistral AI. Comment puis-je vous aider aujourd'hui ?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       meta: {
-        providerUsed: 'gemini',
-        sovereign: false,
-        latencyMs: 80,
-        model: 'Gemini 3 Flash',
+        providerUsed: 'cloud_mistral',
+        sovereign: true,
+        latencyMs: 45,
+        model: 'Mistral Small (France / Europe RGPD)',
       },
     },
   ]);
@@ -77,11 +77,14 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     "💡 J'aimerais qu'un jeune voisin m'aide à régler ma tablette numérique.",
     "🚶 Comment rejoindre la marche douce du Point Zéro ?",
     "🪚 Comment emprunter un escabeau ou une scie en toute sécurité ?",
+    "🌊 Comment fonctionne la gratuité 1ère année pour les habitants de La Grande-Motte ?",
   ] : [
+    "📡 Comment synchroniser mes fiches et alertes en direct sans serveur (WebRTC / Wi-Fi) ?",
     "🤝 Quelles sont les missions d'entraide prioritaires pour nos aînés cette semaine ?",
     "🥬 Comment participer aux ateliers du Jardin Partagé du Ponant ?",
     "📜 Comment fonctionne mon attestation officielle d'engagement bénévole ?",
     "🧰 Comment prêter un outil à un aîné avec le reçu numérique de confiance ?",
+    "💳 Quels sont les tarifs officiels ALPHABETTE (39€, 59€ et Bouquet 99€/199€) ?",
   ];
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -101,15 +104,24 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
     const systemInstruction = `Tu es l'assistant de conception, de support et d'administration de ProxiLien, la plateforme de mise en relation de proximité, d'entraide locale et de communication citoyenne éditée par ALPHABETTE SASU (fondée par Valentin RICHAUD). Ville actuelle : ${currentCity.name}.
 
-FEUILLE DE ROUTE & STRATÉGIE DE DÉPLOIEMENT :
-1. Phase pilote (Année 1) : Test grandeur nature 100 % gratuit pour l'ensemble des habitants, associations et commerces de la ville de La Grande-Motte.
-2. Déploiement intercommunal (horizon 3-4 mois) :
-   - Commercialisation de licences municipales aux mairies et collectivités (tableau de bord d'alertes citoyennes, valorisation des commerces locaux, canal d'information directe sans dépendance aux réseaux sociaux américains).
-   - Module individuel citoyen : accès direct pour les usagers hors communes abonnées ou fonctionnalités avancées premium intégrées dans le Pass ALPHABETTE (40 € TTC / an avec les autres applications souveraines).
+SOUVERAINETÉ & ENGAGEMENT RGPD (MISTRAL AI EXCLUSIF) :
+- Toutes les applications reposent rigoureusement et exclusivement sur Mistral AI (entreprise française, infrastructures en Europe).
+- Zéro traçage publicitaire, aucune donnée d'utilisateur n'est réutilisée pour l'entraînement public des modèles.
 
-ENGAGEMENTS :
-- Respect absolu de la vie privée : aucun traçage commercial, aucun cookie publicitaire, hébergement et traitement souverains en France.
-- Ton : chaleureux, civique, clair, valorisant le lien social, la sécurité des aînés, la dynamique intergénérationnelle et l'autonomie des communes.`;
+GRILLE TARIFAIRE OFFICIELLE & RÈGLE COMMUNE :
+1. Habitants de La Grande-Motte : 1ère année 100 % GRATUITE (avec géolocalisation obligatoire).
+2. Application Individuelle ProxiLien :
+   - Formule BYOK (Clé client) : 39 € / an.
+   - Formule Confort (Clé Alphabette incluse) : 59 € / an (après 7 jours d'essai offerts).
+3. Le Bouquet Alphabette (Accès à TOUTES les applications : ProxiLien, LidarSol, OSolar, Infos Perso Grand Format, L'Œil de l'Atelier 3D) :
+   - Pass Bouquet BYOK : 99 € / an.
+   - Pass Bouquet Intégral : 199 € / an.
+4. Hub central : Inviter l'utilisateur à découvrir toute la suite sur http://alphabette.fr.
+
+RÉSILIENCE LOCALE & P2P :
+- Synchronisation décentralisée WebRTC DataChannel (QR Code direct ou Wi-Fi local) sans serveur central avec chiffrement AES-GCM 256.
+
+Ton : chaleureux, civique, bienveillant, clair et valorisant le lien social et l'autonomie citoyenne.`;
 
     try {
       const response: AIResponse = await askAI(query, {
@@ -321,6 +333,18 @@ ENGAGEMENTS :
             <Send className="w-4 h-4" />
             <span className="hidden sm:inline">Envoyer</span>
           </button>
+        </div>
+
+        {/* Hub link footer */}
+        <div className="pt-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
+          <a
+            href="http://alphabette.fr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline font-bold text-orange-600 dark:text-amber-400 inline-flex items-center gap-1"
+          >
+            Découvrir toutes les applications de la suite sur http://alphabette.fr
+          </a>
         </div>
       </div>
     </div>

@@ -23,41 +23,47 @@ async function startServer() {
     });
   });
 
-  // AI Router Status & Configuration
+  // AI Router Status & Configuration (Mistral AI Exclusif)
   app.get("/api/ai/status", (_req, res) => {
     const mistralCreds = getMistralCredentials();
 
     res.json({
       status: "active",
-      activeProvider: process.env.AI_PROVIDER || "gemini",
-      localAI: {
-        url: process.env.LOCAL_AI_URL || "http://localhost:11434",
-        model: process.env.LOCAL_AI_MODEL || "mistral-nemo",
-      },
+      provider: "Mistral AI (France / Europe - RGPD Native)",
+      hubUrl: "http://alphabette.fr",
       mistralCloud: {
+        baseUrl: mistralCreds.baseUrl,
         configured: Boolean(mistralCreds.apiKey),
         model: mistralCreds.model,
       },
-      gemini: {
-        configured: Boolean(process.env.GEMINI_API_KEY),
-        model: "gemini-3.8-flash (avec basculement gemini-2.5-flash)",
+      mistralLocal: {
+        url: mistralCreds.localUrl,
+        model: mistralCreds.localModel,
+        support: "Mac Local (Ollama / Metal)",
       },
-      phases: {
-        phase1: "Prototypage & Validation : Google Gemini (Actif en dev)",
-        phase2: "Moteur Local Souverain : Machine dédiée (Ollama / vLLM, 0€ inférence)",
-        phase3: "Secours Cloud Européen : Mistral AI Officiel France (Basculement transparent < 3.5s)",
+      accessTiers: {
+        tier1: "Période d'essai (7 jours offerts) : Clé propriétaire Alphabette",
+        tier2: "Mode BYOK (Bring Your Own Key) : Clé client personnelle Mistral",
+        tier3: "Mode managé : Clé Alphabette gérée et incluse",
       },
       publisher: {
-        name: "ALPHABETTE",
+        name: "ALPHABETTE SASU",
         founder: "Valentin RICHAUD",
         hosting: "Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)",
-        privacy: "Zéro pistage publicitaire, respect total de la vie privée",
-        pricing: {
-          standalone: "1 € / mois (ProxiLien seul)",
-          bundle: "3 € / mois (Suite complète ALPHABETTE)",
+        privacy: "Zéro pistage publicitaire, conformité RGPD stricte, aucune réutilisation des données d'entraînement",
+        pricingGrid: {
+          pilotLaGrandeMotte: "100% GRATUIT la 1ère année (avec géolocalisation obligatoire)",
+          applicationIndividuelle: {
+            byok: "39 € / an (Formule BYOK - Clé client)",
+            confort: "59 € / an (Formule Confort - Clé Alphabette incluse)",
+          },
+          bouquetAlphabette: {
+            byok: "99 € / an (Pass Bouquet BYOK - Accès illimité à toute la suite)",
+            integral: "199 € / an (Pass Bouquet Intégral - Toute la suite avec clés Mistral incluses)",
+          },
           catalog: [
-            "PROXILIEN (Entraide intergénérationnelle)",
-            "LIDARSOL (Cadastre solaire & géométrique LiDAR)",
+            "PROXILIEN (Entraide de proximité et lien citoyen)",
+            "LIDARSOL (Cadastre solaire & géométrie LiDAR)",
             "OSOLAR (Optimisation photovoltaïque citoyenne)",
             "INFOS PERSO GRAND FORMAT (Portail aînés haute lisibilité)",
             "L'ŒIL DE L'ATELIER 3D (Gestion et conception atelier 3D)",

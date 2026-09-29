@@ -164,3 +164,84 @@ export interface ToolLoan {
   receiptCode: string; // ex: "PRET-LGM-849"
   smsConfirmationSent: boolean;
 }
+
+export type CitizenAlertSeverity = 'info' | 'vigilance' | 'critique';
+export type CitizenAlertCategory = 'meteo' | 'secours' | 'solidarite' | 'coupure' | 'commune';
+
+export interface CitizenAlert {
+  id: string;
+  title: string;
+  message: string;
+  category: CitizenAlertCategory;
+  severity: CitizenAlertSeverity;
+  quartier: string;
+  timestamp: string;
+  authorName: string;
+  authorRole: string;
+  encrypted: boolean;
+  signature: string;
+  verified: boolean;
+  expiresAt?: string;
+  receivedViaP2P?: boolean;
+}
+
+export interface CivicCardsSyncPayload {
+  version: string;
+  senderId: string;
+  senderName: string;
+  cityName: string;
+  timestamp: number;
+  helpRequests: HelpRequest[];
+  toolLoans: ToolLoan[];
+  communityEvents: CommunityEvent[];
+  citizenAlerts: CitizenAlert[];
+}
+
+export type P2PConnectionStatus =
+  | 'idle'
+  | 'creating_offer'
+  | 'waiting_for_answer'
+  | 'scanning_answer'
+  | 'creating_answer'
+  | 'connecting'
+  | 'connected'
+  | 'syncing'
+  | 'synced'
+  | 'error'
+  | 'disconnected';
+
+/**
+ * Paliers d'accès IA Écosystème ALPHABETTE (Mistral AI Exclusif)
+ * 1. Période d'essai (7 jours offerts avec la clé propriétaire Alphabette)
+ * 2. Mode BYOK (Bring Your Own Key) avec clé Mistral personnelle
+ * 3. Mode managé (Clé Alphabette incluse)
+ * 4. Mode local Mac (Ollama / Metal sur http://localhost:11434/v1)
+ */
+export type MistralAccessTier = 'trial' | 'byok' | 'managed' | 'local_mac';
+
+export type MistralModelId =
+  | 'mistral-small-latest'
+  | 'mistral-large-latest'
+  | 'open-mistral-7b'
+  | 'open-mistral-nemo'
+  | 'codestral-latest'
+  | 'custom';
+
+export interface MistralUserConfig {
+  tier: MistralAccessTier;
+  apiKey?: string;
+  baseUrl?: string;
+  model: MistralModelId | string;
+  trialStartDate?: string;
+}
+
+/**
+ * Grille tarifaire officielle ALPHABETTE
+ */
+export type AlphabettePlanId =
+  | 'lgm_pilot_free'     // 100% Gratuit 1ère année (Habitants La Grande-Motte avec géolocalisation obligatoire)
+  | 'byok_app'           // 39 € / an - Application ProxiLien avec clé Mistral client
+  | 'comfort_app'        // 59 € / an - Application ProxiLien avec clé Mistral Alphabette incluse
+  | 'bouquet_byok'       // 99 € / an - TOUTES les applications avec sa propre clé
+  | 'bouquet_integral';  // 199 € / an - TOUTES les applications avec clés Mistral gérées et incluses
+

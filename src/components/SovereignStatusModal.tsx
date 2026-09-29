@@ -4,34 +4,55 @@ import {
   Server, 
   Zap, 
   Cpu, 
-  ArrowRight, 
   CheckCircle2, 
   RefreshCw, 
   Globe, 
   Lock, 
   X,
   Sparkles,
-  Timer
+  KeyRound,
+  ExternalLink,
+  MapPin,
+  Laptop
 } from 'lucide-react';
-import { ThemeConfig } from '../types';
-import { askAI, getAIStatus, AIStatusResponse, AIResponse, ClientAIProvider } from '../services/aiService';
+import { ThemeConfig, MistralAccessTier, MistralModelId } from '../types';
+import { 
+  askAI, 
+  getAIStatus, 
+  AIStatusResponse, 
+  AIResponse, 
+  getTrialInfo, 
+  getMistralConfig, 
+  saveMistralConfig 
+} from '../services/aiService';
+import { getStoredLGMGeoStatus, verifyRealLGMGeolocation, simulateLGMGeolocation } from '../services/geolocationService';
 
 interface SovereignStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
   themeConfig: ThemeConfig;
+  onOpenPricing?: () => void;
 }
 
 export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
   isOpen,
   onClose,
   themeConfig,
+  onOpenPricing,
 }) => {
   const [statusData, setStatusData] = useState<AIStatusResponse | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<ClientAIProvider>('gemini');
-  const [testPrompt, setTestPrompt] = useState<string>("En quoi le moteur souverain ALPHABETTE garantit-il le respect de la vie privée des aînés de La Grande-Motte ?");
+  const [activeTab, setActiveTab] = useState<MistralAccessTier | 'lgm_geo'>('trial');
+  const [byokKey, setByokKey] = useState<string>('');
+  const [byokModel, setByokModel] = useState<string>('mistral-small-latest');
+  const [byokBaseUrl, setByokBaseUrl] = useState<string>('https://api.mistral.ai/v1');
+  const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
+
+  const [testPrompt, setTestPrompt] = useState<string>("En quoi la souveraineté Mistral AI et la conformité RGPD protègent-elles les aînés de La Grande-Motte ?");
   const [isTesting, setIsTesting] = useState<boolean>(false);
   const [testResult, setTestResult] = useState<AIResponse | null>(null);
+
+  const trialInfo = getTrialInfo();
+  const geoStatus = getStoredLGMGeoStatus();
 
   const isDark = themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark';
   const isGold = themeConfig.themeId === 'gold-white' || themeConfig.themeId === 'gold-dark';
@@ -41,18 +62,42 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
       getAIStatus().then((data) => {
         if (data) setStatusData(data);
       });
+      const config = getMistralConfig();
+      setByokKey(config.apiKey || '');
+      setByokModel(config.model || 'mistral-small-latest');
+      setByokBaseUrl(config.baseUrl || 'https://api.mistral.ai/v1');
+      setActiveTab(config.tier);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleSaveByok = () => {
+    saveMistralConfig({
+      tier: 'byok',
+      apiKey: byokKey,
+      model: byokModel,
+      baseUrl: byokBaseUrl,
+    });
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 3000);
+  };
+
+  const handleSelectTier = (tier: MistralAccessTier) => {
+    setActiveTab(tier);
+    saveMistralConfig({ tier });
+  };
 
   const handleRunTest = async () => {
     setIsTesting(true);
     setTestResult(null);
     try {
       const res = await askAI(testPrompt, {
-        provider: selectedProvider,
-        systemInstruction: "Tu es le moteur d'assistance souverain d'ALPHABETTE pour ProxiLien. Réponds de façon concise, rassurante et professionnelle.",
+        tier: activeTab === 'lgm_geo' ? 'trial' : activeTab,
+        apiKey: activeTab === 'byok' ? byokKey : undefined,
+        baseUrl: activeTab === 'local_mac' ? 'http://localhost:11434/v1' : byokBaseUrl,
+        model: byokModel,
+        systemInstruction: "Tu es l'assistant citoyen souverain ProxiLien édité par ALPHABETTE SASU. Réponds de façon concise, rassurante et professionnelle.",
       });
       setTestResult(res);
     } catch (e) {
@@ -63,8 +108,8 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs overflow-y-auto animate-in fade-in">
-      <div className={`relative w-full max-w-3xl rounded-3xl p-5 sm:p-7 shadow-2xl border-2 my-auto max-h-[92vh] flex flex-col justify-between overflow-hidden ${
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-xs overflow-y-auto animate-in fade-in">
+      <div className={`relative w-full max-w-3xl rounded-3xl p-4 sm:p-6 shadow-2xl border-2 my-auto max-h-[94vh] flex flex-col justify-between overflow-hidden ${
         isGold
           ? 'bg-stone-900 border-amber-500/80 text-stone-100 shadow-gold-lg'
           : isDark
@@ -72,22 +117,22 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
           : 'bg-white border-slate-200 text-slate-900'
       }`}>
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-800">
+        <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-800 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500">
+            <div className="p-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 flex-shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-black font-['Outfit']">
-                  Architecture IA Hybride, Résiliente & Souveraine
+                  Souveraineté RGPD & Moteur Mistral AI
                 </h2>
-                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  ALPHABETTE
+                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 border border-emerald-500/30">
+                  100% Mistral AI Exclusif
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Édité par <strong>ALPHABETTE</strong> (fondée par Valentin RICHAUD) · Hébergement souverain OVH (France)
+                Édité par <strong>ALPHABETTE SASU</strong> (fondée par Valentin RICHAUD) · Données hébergées en France (OVH)
               </p>
             </div>
           </div>
@@ -101,261 +146,302 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto py-3 space-y-4 pr-1 text-xs sm:text-sm">
-          {/* Sovereign Hosting Banner */}
+        <div className="overflow-y-auto py-3 space-y-4 pr-1 text-xs sm:text-sm flex-1">
+          {/* Bannière RGPD et Souveraineté Européenne */}
           <div className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
             isDark ? 'bg-slate-800/60 border-slate-700' : 'bg-emerald-50/70 border-emerald-200'
           }`}>
-            <div className="flex items-center gap-2.5">
-              <Globe className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+            <div className="flex items-start gap-2.5">
+              <Globe className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-extrabold text-xs">
-                  Infrastructure 100% Souveraine & Conforme RGPD
+                <p className="font-extrabold text-xs sm:text-sm">
+                  Conformité RGPD Native & Zéro Entraînement Public
                 </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Front-end & données hébergés sur serveurs souverains OVH (domaines alphabette.fr / alphabette.eu). Zéro cookie publicitaire, zéro profilage commercial.
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
+                  Mistral AI est une entreprise française dont les infrastructures sont exclusivement situées en Union Européenne. Les requêtes et données de nos utilisateurs ne sont <strong>jamais réutilisées pour l'entraînement</strong> des modèles.
                 </p>
               </div>
             </div>
             <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 flex-shrink-0">
-              OVH Gravelines / Roubaix (FR)
+              Serveurs EU / France
             </span>
           </div>
 
-          {/* The 3 Phases */}
+          {/* Onglets 3 Paliers d'Accès Technique */}
           <div>
-            <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-400 mb-2">
-              Stratégie d'Exécution en 3 Phases
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {/* Phase 1 */}
-              <div className={`p-3 rounded-2xl border flex flex-col justify-between ${
-                isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono text-[10px] font-black px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">
-                      Phase 1
-                    </span>
-                    <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Actif
-                    </span>
-                  </div>
-                  <h4 className="font-extrabold text-xs mb-1">Prototypage & Validation</h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Google Gemini 3 (AI Studio / SDK Google GenAI). Valide toutes les fonctionnalités et interfaces.
-                  </p>
-                </div>
-                <span className="text-[10px] font-mono mt-2 text-slate-400 block pt-1.5 border-t border-slate-200/50 dark:border-slate-700">
-                  gemini-3.8-flash
-                </span>
-              </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                Mode d'Accès IA Configuré
+              </span>
+              <span className="text-[11px] font-semibold text-slate-500">
+                Standardisation : <code className="font-mono text-orange-500">AI_BASE_URL, AI_API_KEY, MISTRAL_MODEL</code>
+              </span>
+            </div>
 
-              {/* Phase 2 */}
-              <div className={`p-3 rounded-2xl border flex flex-col justify-between ${
-                isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono text-[10px] font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
-                      Phase 2
-                    </span>
-                    <span className="text-[10px] text-amber-500 font-bold">Cible Prioritaire</span>
-                  </div>
-                  <h4 className="font-extrabold text-xs mb-1">Moteur Local Souverain</h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Machine dédiée haute performance (Ollama / vLLM). Traitement 100% en local sur site, 0€ inférence.
-                  </p>
-                </div>
-                <span className="text-[10px] font-mono mt-2 text-slate-400 block pt-1.5 border-t border-slate-200/50 dark:border-slate-700">
-                  mistral-nemo (Local)
-                </span>
-              </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 rounded-2xl border bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => handleSelectTier('trial')}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === 'trial'
+                    ? 'bg-amber-500 text-stone-950 font-black shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Essai 7 Jours</span>
+              </button>
 
-              {/* Phase 3 */}
-              <div className={`p-3 rounded-2xl border flex flex-col justify-between ${
-                isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'
-              }`}>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono text-[10px] font-black px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400">
-                      Phase 3
-                    </span>
-                    <span className="text-[10px] text-purple-400 font-bold flex items-center gap-1">
-                      <Zap className="w-3 h-3" /> Secours &lt; 3.5s
-                    </span>
-                  </div>
-                  <h4 className="font-extrabold text-xs mb-1">Secours Cloud Européen</h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Bascule transparente vers l'API officielle Mistral AI (France/UE) en cas de panne, coupure ou pic de charge.
-                  </p>
-                </div>
-                <span className="text-[10px] font-mono mt-2 text-slate-400 block pt-1.5 border-t border-slate-200/50 dark:border-slate-700">
-                  api.mistral.ai (Paris)
-                </span>
-              </div>
+              <button
+                type="button"
+                onClick={() => handleSelectTier('byok')}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === 'byok'
+                    ? 'bg-orange-600 text-white font-black shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Mode BYOK</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectTier('managed')}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === 'managed'
+                    ? 'bg-indigo-600 text-white font-black shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Mode Managé</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectTier('local_mac')}
+                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === 'local_mac'
+                    ? 'bg-purple-600 text-white font-black shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Laptop className="w-3.5 h-3.5" />
+                <span>Local Mac</span>
+              </button>
             </div>
           </div>
 
-          {/* Interactive Testing Sandbox */}
-          <div className={`p-4 rounded-2xl border space-y-3 ${
-            isDark ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-50/80 border-slate-200'
-          }`}>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <Cpu className="w-4 h-4 text-orange-500" />
-                <h4 className="font-extrabold text-xs uppercase tracking-wider">
-                  Testeur en Direct du Routeur Hybride
-                </h4>
+          {/* Contenu spécifique de l'onglet sélectionné */}
+          {activeTab === 'trial' && (
+            <div className={`p-4 rounded-2xl border ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-extrabold text-sm text-amber-600 dark:text-amber-400">
+                  1. Période d'essai gratuite (7 jours offerts)
+                </span>
+                <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                  {trialInfo.isExpired ? 'Expiré' : `${trialInfo.daysRemaining} jour(s) restant(s)`}
+                </span>
               </div>
-              
-              {/* Provider Selection */}
-              <div className="flex items-center gap-1 bg-slate-200 dark:bg-slate-900 p-1 rounded-xl text-xs">
-                <button
-                  type="button"
-                  onClick={() => setSelectedProvider('hybrid_mistral')}
-                  className={`px-2 py-1 rounded-lg font-bold transition cursor-pointer ${
-                    selectedProvider === 'hybrid_mistral'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                  }`}
-                >
-                  Hybride Résilient
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedProvider('gemini')}
-                  className={`px-2 py-1 rounded-lg font-bold transition cursor-pointer ${
-                    selectedProvider === 'gemini'
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                  }`}
-                >
-                  Gemini (Dev)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedProvider('cloud_mistral')}
-                  className={`px-2 py-1 rounded-lg font-bold transition cursor-pointer ${
-                    selectedProvider === 'cloud_mistral'
-                      ? 'bg-purple-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                  }`}
-                >
-                  Mistral Cloud
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedProvider('local_only')}
-                  className={`px-2 py-1 rounded-lg font-bold transition cursor-pointer ${
-                    selectedProvider === 'local_only'
-                      ? 'bg-amber-600 text-white shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
-                  }`}
-                >
-                  Local Strict
-                </button>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
+                Tout nouvel inscrit bénéficie d'un accès complet et immédiat à l'application ProxiLien, alimenté par la clé API Mistral propriétaire fournie et financée par ALPHABETTE SASU.
+              </p>
+              {trialInfo.isExpired && (
+                <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-xs flex items-center justify-between">
+                  <span>Votre période d'essai est terminée. Choisissez la formule BYOK ou Confort.</span>
+                  {onOpenPricing && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenPricing();
+                      }}
+                      className="px-3 py-1 bg-amber-600 text-white font-bold rounded-lg text-xs hover:bg-amber-700 cursor-pointer"
+                    >
+                      Voir les Tarifs
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'byok' && (
+            <div className={`p-4 rounded-2xl border space-y-3 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <div>
+                <span className="font-extrabold text-sm text-orange-600 dark:text-orange-400 block mb-1">
+                  2. Mode BYOK (Bring Your Own Key) · 39 € / an
+                </span>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Renseignez votre propre clé API Mistral pour consommer votre quota personnel chez Mistral AI en toute transparence.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-xs font-bold mb-1">
+                    Votre Clé API Mistral (AI_API_KEY) :
+                  </label>
+                  <input
+                    type="password"
+                    value={byokKey}
+                    onChange={(e) => setByokKey(e.target.value)}
+                    placeholder="Ex: abcd1234efgh5678ijkl9012mnop..."
+                    className="w-full px-3 py-2 rounded-xl text-xs border font-mono bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:outline-hidden focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold mb-1">
+                      Modèle Mistral (MISTRAL_MODEL) :
+                    </label>
+                    <select
+                      value={byokModel}
+                      onChange={(e) => setByokModel(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl text-xs border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                    >
+                      <option value="mistral-small-latest">mistral-small-latest (Recommandé)</option>
+                      <option value="open-mistral-7b">open-mistral-7b (Haute disponibilité)</option>
+                      <option value="open-mistral-nemo">open-mistral-nemo (Résilient)</option>
+                      <option value="mistral-large-latest">mistral-large-latest (Raisonnement maximal)</option>
+                      <option value="codestral-latest">codestral-latest (Technique)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold mb-1">
+                      Point d'accès API (AI_BASE_URL) :
+                    </label>
+                    <input
+                      type="text"
+                      value={byokBaseUrl}
+                      onChange={(e) => setByokBaseUrl(e.target.value)}
+                      placeholder="https://api.mistral.ai/v1"
+                      className="w-full px-3 py-2 rounded-xl text-xs border font-mono bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={handleSaveByok}
+                    className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-extrabold rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Enregistrer la configuration BYOK</span>
+                  </button>
+                  {savedSuccess && (
+                    <span className="text-emerald-500 font-bold text-xs animate-pulse">
+                      Paramètres sauvegardés localement !
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Prompt input */}
-            <div>
-              <textarea
+          {activeTab === 'managed' && (
+            <div className={`p-4 rounded-2xl border ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <span className="font-extrabold text-sm text-indigo-600 dark:text-indigo-400 block mb-1">
+                3. Mode Managé (Clé Alphabette incluse) · 59 € / an (ou Bouquet 199 €)
+              </span>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Vous n'avez pas besoin de créer de compte développeur ni de gérer des facturations d'API. Alphabette prend en charge la clé, l'infrastructure européenne et la maintenance continue.
+              </p>
+            </div>
+          )}
+
+          {activeTab === 'local_mac' && (
+            <div className={`p-4 rounded-2xl border ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <span className="font-extrabold text-sm text-purple-600 dark:text-purple-400 block mb-1">
+                4. Environnement Local Mac (Ollama / Metal)
+              </span>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-2">
+                Exécution locale sous macOS via puce Apple Silicon (M1/M2/M3/M4) avec accélération Metal et Ollama. Coût d'inférence nul, données 100% isolées en local.
+              </p>
+              <div className="font-mono text-xs bg-slate-200 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+                ollama run mistral-nemo --port 11434
+              </div>
+            </div>
+          )}
+
+          {/* Test en Direct */}
+          <div className={`p-3.5 rounded-2xl border ${isDark ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-xs uppercase tracking-wider text-slate-500">
+                Tester la connexion Mistral AI
+              </span>
+              <span className="text-[11px] text-slate-400">
+                Mode actuel : <strong className="text-orange-500">{activeTab}</strong>
+              </span>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
                 value={testPrompt}
                 onChange={(e) => setTestPrompt(e.target.value)}
-                rows={2}
-                className={`w-full p-2.5 rounded-xl border text-xs sm:text-sm font-sans resize-none transition outline-hidden ${
-                  isDark
-                    ? 'bg-slate-900 border-slate-700 text-white focus:border-orange-500'
-                    : 'bg-white border-slate-300 text-slate-900 focus:border-orange-500'
-                }`}
-                placeholder="Posez une question pour tester le routeur IA..."
+                className="flex-1 px-3 py-2 rounded-xl text-xs border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700"
+                placeholder="Posez une question citoyenne..."
               />
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] text-slate-400">
-                Mode sélectionné : <strong className="text-orange-500">{selectedProvider}</strong>
-              </span>
               <button
                 type="button"
                 onClick={handleRunTest}
-                disabled={isTesting || !testPrompt.trim()}
-                className="bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-extrabold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+                disabled={isTesting}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition cursor-pointer flex items-center gap-1.5 flex-shrink-0"
               >
-                {isTesting ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Routage en cours...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Lancer le test de résilience</span>
-                  </>
-                )}
+                {isTesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                <span>{isTesting ? 'Appel...' : 'Tester'}</span>
               </button>
             </div>
 
-            {/* Test Result Output */}
             {testResult && (
-              <div className={`p-3 rounded-xl border space-y-2 animate-in fade-in ${
-                isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'
-              }`}>
-                <div className="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-slate-200/50 dark:border-slate-800 text-[11px]">
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-full font-black uppercase text-[10px] ${
-                      testResult.providerUsed === 'local_mistral'
-                        ? 'bg-emerald-500/20 text-emerald-400'
-                        : testResult.providerUsed === 'cloud_mistral'
-                        ? 'bg-purple-500/20 text-purple-400'
-                        : 'bg-blue-500/20 text-blue-400'
-                    }`}>
-                      Fournisseur : {testResult.providerUsed}
-                    </span>
-                    <span className="font-mono text-slate-400">Modèle: {testResult.model}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1 font-mono text-slate-400">
-                      <Timer className="w-3 h-3 text-amber-500" />
-                      {testResult.latencyMs} ms
-                    </span>
-                    {testResult.failover && (
-                      <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold">
-                        Basculement transparent activé
-                      </span>
-                    )}
-                  </div>
+              <div className="mt-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-500/40 text-xs space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
+                  <span className="text-emerald-500 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    {testResult.model}
+                  </span>
+                  <span>{testResult.latencyMs} ms · Souverain RGPD</span>
                 </div>
-
-                {testResult.failoverReason && (
-                  <p className="text-[11px] text-amber-500 font-mono">
-                    Raison du basculement : {testResult.failoverReason}
-                  </p>
-                )}
-
-                <div className="text-xs sm:text-sm leading-relaxed whitespace-pre-line text-slate-800 dark:text-slate-200 pt-1">
+                <p className="text-slate-700 dark:text-slate-200 leading-relaxed font-sans">
                   {testResult.text}
-                </div>
+                </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer info */}
-        <div className="pt-3 border-t border-slate-200/50 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-          <div className="flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Chiffrement bout-en-bout · Respect strict du secret des échanges citoyen</span>
+        {/* Footer & LIEN OBLIGATOIRE DU HUB */}
+        <div className="pt-3 border-t border-slate-200/50 dark:border-slate-800 flex flex-col gap-2.5 flex-shrink-0">
+          {/* LIEN PIED DE PAGE OBLIGATOIRE VERS LE HUB */}
+          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center">
+            <a
+              href="http://alphabette.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs sm:text-sm font-extrabold text-orange-600 dark:text-amber-400 hover:underline inline-flex items-center justify-center gap-1.5"
+            >
+              <span>Découvrir toutes les applications de la suite sur http://alphabette.fr</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-bold transition cursor-pointer text-slate-700 dark:text-slate-200"
-          >
-            Fermer
-          </button>
+
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-500 text-[11px]">
+              ALPHABETTE SASU · Plateforme Souveraine Européenne
+            </span>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-bold text-xs cursor-pointer"
+            >
+              Fermer
+            </button>
+          </div>
         </div>
       </div>
     </div>

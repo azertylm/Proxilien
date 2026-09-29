@@ -240,11 +240,22 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="bg-slate-50 p-4 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-          <span>La Grande-Motte reste la référence pilote initiale.</span>
+        <div className="bg-slate-50 p-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <span>La Grande-Motte : pilote 100% gratuit (géolocalisation obligatoire).</span>
+            <span>·</span>
+            <a
+              href="http://alphabette.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-600 font-bold hover:underline"
+            >
+              Suite ALPHABETTE sur http://alphabette.fr
+            </a>
+          </div>
           <button
             onClick={onClose}
-            className="text-slate-700 font-bold hover:underline"
+            className="text-slate-700 font-bold hover:underline cursor-pointer"
           >
             Fermer
           </button>

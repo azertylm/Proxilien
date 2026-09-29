@@ -1,81 +1,188 @@
 /**
  * Service Client d'Abstraction IA Souveraine ALPHABETTE
- * Design Pattern : Strategy & Provider Pattern
+ * Exclusivité MISTRAL AI (France / Europe) — Conformité RGPD Native
  * 
- * L'ensemble du code applicatif appelle `askAI(prompt, options)`.
- * Aucune clé secrète n'est exposée côté client. Les requêtes sont relayées
- * au serveur Express qui orchestre :
- *  - Phase 1 : Google Gemini (Prototypage actif)
- *  - Phase 2 : Moteur Local Souverain (Machine dédiée Ollama/vLLM)
- *  - Phase 3 : Secours Cloud Européen (Mistral AI France - Basculement automatique en < 3.5s)
+ * Trois niveaux d'accès standardisés :
+ * 1. Période d'essai (7 jours offerts avec la clé propriétaire Alphabette)
+ * 2. Mode BYOK (Bring Your Own Key) avec clé client personnelle Mistral
+ * 3. Mode managé (Clé Alphabette incluse)
+ * 
+ * Environnements :
+ * - Local Mac : Ollama / Metal (http://localhost:11434/v1)
+ * - Cloud Mistral officiel : https://api.mistral.ai/v1
  */
 
-export type ClientAIProvider = 'gemini' | 'hybrid_mistral' | 'local_only' | 'cloud_mistral' | 'auto';
+import { MistralAccessTier, MistralModelId, MistralUserConfig } from '../types';
 
 export interface AskAIOptions {
   systemInstruction?: string;
-  provider?: ClientAIProvider;
+  tier?: MistralAccessTier;
+  apiKey?: string;
+  baseUrl?: string;
+  model?: string;
   temperature?: number;
   maxTokens?: number;
 }
 
 export interface AIResponse {
   text: string;
-  providerUsed: 'gemini' | 'local_mistral' | 'cloud_mistral' | 'mock_fallback';
+  providerUsed: 'cloud_mistral' | 'local_mistral' | 'byok_mistral' | 'mock_fallback';
   sovereign: boolean;
+  rgpdCompliant: boolean;
   model: string;
   latencyMs: number;
   failover: boolean;
   failoverReason?: string;
   timestamp: string;
+  accessTier: MistralAccessTier;
   hostingInfo: {
     publisher: string;
     founder: string;
     serverLocation: string;
+    hubUrl: string;
+    compliance: string;
   };
 }
 
 export interface AIStatusResponse {
   status: string;
-  activeProvider: string;
-  localAI: { url: string; model: string };
-  mistralCloud: { configured: boolean; model: string };
-  gemini: { configured: boolean; model: string };
-  phases: {
-    phase1: string;
-    phase2: string;
-    phase3: string;
+  provider: string;
+  hubUrl: string;
+  mistralCloud: {
+    baseUrl: string;
+    configured: boolean;
+    model: string;
+  };
+  mistralLocal: {
+    url: string;
+    model: string;
+    support: string;
+  };
+  accessTiers: {
+    tier1: string;
+    tier2: string;
+    tier3: string;
   };
   publisher: {
     name: string;
     founder: string;
     hosting: string;
     privacy: string;
-    pricing: {
-      standalone: string;
-      bundle: string;
+    pricingGrid: {
+      pilotLaGrandeMotte: string;
+      applicationIndividuelle: {
+        byok: string;
+        confort: string;
+      };
+      bouquetAlphabette: {
+        byok: string;
+        integral: string;
+      };
       catalog: string[];
     };
   };
 }
 
+// Clés de stockage local
+const STORAGE_TRIAL_START = 'alphabette_trial_start_date';
+const STORAGE_BYOK_KEY = 'alphabette_byok_mistral_key';
+const STORAGE_BYOK_MODEL = 'alphabette_byok_mistral_model';
+const STORAGE_BYOK_URL = 'alphabette_byok_mistral_url';
+const STORAGE_ACCESS_TIER = 'alphabette_ai_access_tier';
+
 /**
- * Fonction unifiée d'appel au moteur IA souverain
+ * Récupère les informations de la période d'essai de 7 jours offerts
+ */
+export function getTrialInfo(): {
+  startDate: string;
+  daysUsed: number;
+  daysRemaining: number;
+  isExpired: boolean;
+} {
+  let startDate = localStorage.getItem(STORAGE_TRIAL_START);
+  if (!startDate) {
+    startDate = new Date().toISOString();
+    localStorage.setItem(STORAGE_TRIAL_START, startDate);
+  }
+
+  const startMs = new Date(startDate).getTime();
+  const nowMs = Date.now();
+  const diffDays = Math.floor((nowMs - startMs) / (1000 * 60 * 60 * 24));
+  const daysUsed = Math.max(0, diffDays);
+  const daysRemaining = Math.max(0, 7 - daysUsed);
+  const isExpired = daysRemaining <= 0;
+
+  return {
+    startDate,
+    daysUsed,
+    daysRemaining,
+    isExpired,
+  };
+}
+
+/**
+ * Récupère la configuration Mistral actuelle de l'utilisateur
+ */
+export function getMistralConfig(): MistralUserConfig {
+  const trial = getTrialInfo();
+  const storedTier = (localStorage.getItem(STORAGE_ACCESS_TIER) as MistralAccessTier) || (trial.isExpired ? 'byok' : 'trial');
+  const apiKey = localStorage.getItem(STORAGE_BYOK_KEY) || '';
+  const model = (localStorage.getItem(STORAGE_BYOK_MODEL) as MistralModelId) || 'mistral-small-latest';
+  const baseUrl = localStorage.getItem(STORAGE_BYOK_URL) || 'https://api.mistral.ai/v1';
+
+  return {
+    tier: storedTier,
+    apiKey,
+    model,
+    baseUrl,
+    trialStartDate: trial.startDate,
+  };
+}
+
+/**
+ * Enregistre la configuration Mistral de l'utilisateur
+ */
+export function saveMistralConfig(config: Partial<MistralUserConfig>): void {
+  if (config.tier) {
+    localStorage.setItem(STORAGE_ACCESS_TIER, config.tier);
+  }
+  if (config.apiKey !== undefined) {
+    localStorage.setItem(STORAGE_BYOK_KEY, config.apiKey.trim());
+  }
+  if (config.model) {
+    localStorage.setItem(STORAGE_BYOK_MODEL, config.model);
+  }
+  if (config.baseUrl) {
+    localStorage.setItem(STORAGE_BYOK_URL, config.baseUrl.trim());
+  }
+}
+
+/**
+ * Fonction unifiée d'appel au moteur IA souverain Mistral AI
  */
 export async function askAI(prompt: string, options: AskAIOptions = {}): Promise<AIResponse> {
   const startTime = Date.now();
+  const config = getMistralConfig();
+  const tier = options.tier || config.tier;
+
+  const payload = {
+    prompt,
+    systemInstruction: options.systemInstruction,
+    tier,
+    apiKey: options.apiKey || (tier === 'byok' ? config.apiKey : undefined),
+    baseUrl: options.baseUrl || config.baseUrl,
+    model: options.model || config.model,
+    temperature: options.temperature,
+    maxTokens: options.maxTokens,
+  };
+
   try {
     const response = await fetch('/api/ai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        prompt,
-        systemInstruction: options.systemInstruction,
-        provider: options.provider || 'gemini',
-        temperature: options.temperature,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -87,70 +194,39 @@ export async function askAI(prompt: string, options: AskAIOptions = {}): Promise
     return data;
   } catch (error: unknown) {
     console.error('[aiService] Erreur appel API IA:', error);
-    // Repli de secours gracieux local client si le serveur est momentanément hors ligne
     const latency = Date.now() - startTime;
     return {
-      text: "ProxiLien vous répond en toute sécurité. Les données sont strictement protégées selon la charte éthique ALPHABETTE.",
+      text: "ProxiLien vous répond en toute sécurité. Les données sont strictement protégées selon la charte éthique ALPHABETTE et les normes RGPD (Mistral AI Europe).",
       providerUsed: 'mock_fallback',
       sovereign: true,
-      model: 'Secours résilient local',
+      rgpdCompliant: true,
+      model: 'Moteur Résilient Local Souverain',
       latencyMs: latency,
       failover: true,
-      failoverReason: error instanceof Error ? error.message : 'Connexion réseau instable',
+      failoverReason: error instanceof Error ? error.message : 'Connexion réseau momentanément indisponible',
       timestamp: new Date().toISOString(),
+      accessTier: tier,
       hostingInfo: {
-        publisher: 'ALPHABETTE',
+        publisher: 'ALPHABETTE SASU',
         founder: 'Valentin RICHAUD',
-        serverLocation: 'Serveurs Souverains OVH France',
+        serverLocation: 'Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)',
+        hubUrl: 'http://alphabette.fr',
+        compliance: 'RGPD Native · Mistral AI France',
       },
     };
   }
 }
 
 /**
- * Récupère le statut et la configuration du routeur souverain
+ * Récupère le statut complet du serveur IA souverain
  */
 export async function getAIStatus(): Promise<AIStatusResponse | null> {
   try {
-    const response = await fetch('/api/ai/status');
-    if (!response.ok) return null;
-    return await response.json();
-  } catch (err) {
-    console.warn('[aiService] Impossible de joindre /api/ai/status:', err);
+    const res = await fetch('/api/ai/status');
+    if (!res.ok) return null;
+    return (await res.json()) as AIStatusResponse;
+  } catch (e) {
+    console.warn('[aiService] Impossible de récupérer /api/ai/status:', e);
     return null;
   }
-}
-
-/**
- * Assistant Métier ProxiLien : Aide à la rédaction d'un besoin de voisin
- */
-export async function generateSolidarityRequest(
-  seniorName: string,
-  rawNeed: string,
-  quartier: string
-): Promise<string> {
-  const prompt = `Voici une demande d'aide brute exprimée par ${seniorName}, habitant le quartier ${quartier} à La Grande-Motte :
-"${rawNeed}"
-
-Rédige une annonce d'entraide chaleureuse, respectueuse et claire en 2-3 phrases courtes pour les jeunes voisins bénévoles de ProxiLien. Précise les détails utiles sans jargon.`;
-
-  const res = await askAI(prompt, {
-    systemInstruction: "Tu es le rédacteur solidaire et bienveillant de ProxiLien (ALPHABETTE). Ton ton est humain, poli et chaleureux.",
-  });
-  return res.text;
-}
-
-/**
- * Assistant Métier ProxiLien : Recommandation parmi les 50 initiatives de La Grande-Motte
- */
-export async function matchInitiativeAdvice(userDescription: string): Promise<string> {
-  const prompt = `Un habitant de La Grande-Motte recherche une activité solidaire ou un soutien :
-"${userDescription}"
-
-Parmi les types d'initiatives possibles (Courses solidaires, Frigo du Port, Marche douce au Point Zéro, Jardin partagé du Ponant, Brico-dépannage, Visite amicale, Navette marché), conseille avec empathie 2 initiatives adaptées et encourage la participation.`;
-
-  const res = await askAI(prompt, {
-    systemInstruction: "Tu es le conseiller communautaire ProxiLien à La Grande-Motte.",
-  });
-  return res.text;
 }
