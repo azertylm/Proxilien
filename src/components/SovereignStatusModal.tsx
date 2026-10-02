@@ -55,7 +55,8 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
   const geoStatus = getStoredLGMGeoStatus();
 
   const isDark = themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark';
-  const isGold = themeConfig.themeId === 'gold-white' || themeConfig.themeId === 'gold-dark';
+  const isGoldWhite = themeConfig.themeId === 'gold-white';
+  const isGoldDark = themeConfig.themeId === 'gold-dark';
 
   useEffect(() => {
     if (isOpen) {
@@ -108,13 +109,15 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-xs overflow-y-auto animate-in fade-in">
-      <div className={`relative w-full max-w-3xl rounded-3xl p-4 sm:p-6 shadow-2xl border-2 my-auto max-h-[94vh] flex flex-col justify-between overflow-hidden ${
-        isGold
-          ? 'bg-stone-900 border-amber-500/80 text-stone-100 shadow-gold-lg'
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/75 backdrop-blur-xs overflow-y-auto animate-in fade-in">
+      <div className={`relative w-full max-w-3xl rounded-3xl p-4 sm:p-6 shadow-2xl border-2 my-auto max-h-[88vh] flex flex-col justify-between overflow-hidden text-sm ${
+        isGoldDark
+          ? 'bg-stone-950 border-amber-500 text-stone-100 shadow-gold-lg'
           : isDark
-          ? 'bg-slate-900 border-slate-700 text-white'
-          : 'bg-white border-slate-200 text-slate-900'
+          ? 'bg-slate-900 border-slate-700 text-white shadow-2xl'
+          : isGoldWhite
+          ? 'bg-white border-amber-300 text-slate-900 shadow-gold'
+          : 'bg-white border-slate-200 text-slate-900 shadow-2xl'
       }`}>
         {/* Header */}
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-800 flex-shrink-0">

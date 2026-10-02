@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserMode, TextSize, CityInfo, ThemeConfig } from '../types';
+import { UserMode, TextSize, CityInfo, ThemeConfig, DeviceMode } from '../types';
 import { 
   Heart, 
   MapPin, 
@@ -21,7 +21,10 @@ import {
   Sparkles,
   Building2,
   Radio,
-  QrCode
+  QrCode,
+  Monitor,
+  Tablet,
+  Smartphone
 } from 'lucide-react';
 import { speakText, stopSpeaking } from '../utils/speech';
 
@@ -30,6 +33,8 @@ interface HeaderProps {
   onOpenCitySelector: () => void;
   userMode: UserMode;
   onChangeUserMode: (mode: UserMode) => void;
+  deviceMode?: DeviceMode;
+  onChangeDeviceMode?: (mode: DeviceMode) => void;
   textSize: TextSize;
   onChangeTextSize: (size: TextSize) => void;
   onTriggerSOS: () => void;
@@ -53,6 +58,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCitySelector,
   userMode,
   onChangeUserMode,
+  deviceMode = 'auto',
+  onChangeDeviceMode,
   textSize,
   onChangeTextSize,
   onTriggerSOS,
@@ -131,6 +138,77 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
+        {/* Center: Device Display Mode Switcher (PC / Tablette / Mobile / Auto) */}
+        {onChangeDeviceMode && (
+          <div 
+            id="header-device-switcher"
+            className="flex items-center gap-1 bg-black/35 backdrop-blur-xs px-2 py-0.5 rounded-lg border border-white/20 shadow-xs"
+            title="Sélecteur d'affichage : basculez entre les interfaces PC, Tablette ou Smartphone"
+          >
+            <span className="text-[10px] font-black text-amber-200/90 hidden sm:inline mr-0.5">
+              Affichage :
+            </span>
+            <button
+              type="button"
+              id="btn-device-pc"
+              onClick={() => onChangeDeviceMode('pc')}
+              className={`px-2 py-0.5 rounded flex items-center gap-1 text-[11px] font-black transition cursor-pointer ${
+                deviceMode === 'pc'
+                  ? 'bg-amber-400 text-stone-950 shadow-xs font-black'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+              title="Affichage optimisé PC / Grand écran (proportions compactes, texte équilibré, pas de gigantisme)"
+            >
+              <Monitor className="w-3 h-3 flex-shrink-0" />
+              <span>PC</span>
+            </button>
+
+            <button
+              type="button"
+              id="btn-device-tablet"
+              onClick={() => onChangeDeviceMode('tablet')}
+              className={`px-2 py-0.5 rounded flex items-center gap-1 text-[11px] font-black transition cursor-pointer ${
+                deviceMode === 'tablet'
+                  ? 'bg-amber-400 text-stone-950 shadow-xs font-black'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+              title="Affichage format Tablette (iPad & Android : 2 colonnes équilibrées)"
+            >
+              <Tablet className="w-3 h-3 flex-shrink-0" />
+              <span className="hidden sm:inline">Tablette</span>
+            </button>
+
+            <button
+              type="button"
+              id="btn-device-mobile"
+              onClick={() => onChangeDeviceMode('mobile')}
+              className={`px-2 py-0.5 rounded flex items-center gap-1 text-[11px] font-black transition cursor-pointer ${
+                deviceMode === 'mobile'
+                  ? 'bg-amber-400 text-stone-950 shadow-xs font-black'
+                  : 'text-white/80 hover:text-white hover:bg-white/10'
+              }`}
+              title="Affichage format Smartphone (1 colonne, grandes touches tactiles confortables)"
+            >
+              <Smartphone className="w-3 h-3 flex-shrink-0" />
+              <span className="hidden sm:inline">Mobile</span>
+            </button>
+
+            <button
+              type="button"
+              id="btn-device-auto"
+              onClick={() => onChangeDeviceMode('auto')}
+              className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold transition cursor-pointer ${
+                deviceMode === 'auto'
+                  ? 'bg-white/30 text-white font-black'
+                  : 'text-white/60 hover:text-white'
+              }`}
+              title="Mode Automatique (s'adapte à la largeur de votre navigateur)"
+            >
+              Auto
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 text-xs">
           {/* LGM 1-Year Free Pass Status Badge */}
           {onVerifyGeolocation && (
@@ -206,20 +284,20 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Main Header Container */}
-      <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 py-2 sm:py-3">
+      <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 py-1.5 sm:py-2">
         {/* Top Row: Brand on left + Quick Actions (Theme, Audio, SOS) on right */}
         <div className="flex items-center justify-between gap-2">
           {/* Brand & Identity */}
           <div className="flex items-center gap-2 min-w-0">
-            <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center text-white shadow-md flex-shrink-0 ${
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white shadow-md flex-shrink-0 ${
               isGold
                 ? 'bg-gradient-to-br from-amber-500 via-yellow-400 to-amber-700 border border-amber-300 text-stone-900'
                 : 'bg-gradient-to-br from-orange-500 to-amber-600'
             }`}>
-              {isGold ? <Crown className="w-5 h-5 text-stone-950" /> : <Heart className="w-5 h-5 fill-white" />}
+              {isGold ? <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-stone-950" /> : <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />}
             </div>
             <div className="min-w-0">
-              <span className={`font-black text-xl sm:text-3xl tracking-tight leading-none block truncate ${
+              <span className={`font-black text-lg sm:text-2xl tracking-tight leading-none block truncate ${
                 isGold ? 'text-gold-gradient' : (isDark ? 'text-white' : 'text-slate-900')
               }`}>
                 Proxi<span className={isGold ? 'text-amber-500' : 'text-orange-600'}>Lien</span>

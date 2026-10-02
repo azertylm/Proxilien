@@ -1,23 +1,10 @@
 @import "tailwindcss";
 
-/* High-readability font scaling for seniors (Grandes polices de caractères) */
+/* Baseline standard root font size so desktop PC rem calculations and layouts remain balanced */
 html {
-  font-size: 20px;
+  font-size: 16px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  letter-spacing: 0.02em;
-}
-
-@media (min-width: 640px) {
-  html {
-    font-size: 22px;
-  }
-}
-
-@media (min-width: 1024px) {
-  html {
-    font-size: 24px;
-  }
 }
 
 /* Prevent horizontal overflow on mobile screens */

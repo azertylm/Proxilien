@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserMode, TextSize, CityInfo, HelpRequest, Initiative, ThemeConfig, CommunityEvent, ToolLoan, HelpRequestStatus, CitizenAlert } from './types';
+import { UserMode, TextSize, CityInfo, HelpRequest, Initiative, ThemeConfig, CommunityEvent, ToolLoan, HelpRequestStatus, CitizenAlert, DeviceMode } from './types';
 import { CITIES_DATA } from './data/cities';
 import { INITIAL_HELP_REQUESTS, INITIAL_COMMUNITY_EVENTS, INITIAL_TOOL_LOANS } from './data/mockData';
 import { INITIAL_CITIZEN_ALERTS } from './data/mockAlerts';
@@ -45,13 +45,17 @@ import {
   Lock,
   MapPin,
   ExternalLink,
-  Compass
+  Compass,
+  Monitor,
+  Tablet,
+  Smartphone
 } from 'lucide-react';
 
 export default function App() {
   const [cities, setCities] = useState<CityInfo[]>(CITIES_DATA);
   const [currentCity, setCurrentCity] = useState<CityInfo>(CITIES_DATA[0]); // La Grande-Motte
   const [userMode, setUserMode] = useState<UserMode>('senior');
+  const [deviceMode, setDeviceMode] = useState<DeviceMode>('auto');
   const [activeTab, setActiveTab] = useState<'accueil' | 'evenements' | 'village'>('accueil');
   const [selectedVillageCategory, setSelectedVillageCategory] = useState<string | undefined>(undefined);
 
@@ -62,7 +66,7 @@ export default function App() {
   const [themeConfig, setThemeConfig] = useState<ThemeConfig>({
     themeId: 'gold-white', // Belles lettres en or sur fond blanc signature
     fontFamily: 'lexend',   // Confort maximal pour la vue des aînés
-    textSize: 'xlarge',    // Écrit en très grand par défaut (Haute lisibilité aînés)
+    textSize: 'large',     // Équilibré et net par défaut (pas de gigantisme démesuré sur PC)
   });
 
   // Modals state
@@ -400,12 +404,12 @@ export default function App() {
 
   const isDark = themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark';
 
-  // Text size scaling (Supports 4 levels: normal, large, xlarge, giant)
+  // Calibrated text size scaling (Ensures PC typography is never oversized or bloated)
   const textScaleWrapper =
-    themeConfig.textSize === 'giant' ? 'text-xl sm:text-2xl' :
-    themeConfig.textSize === 'xlarge' ? 'text-lg sm:text-xl' : 
-    themeConfig.textSize === 'large' ? 'text-base sm:text-lg' :
-    'text-sm sm:text-base';
+    themeConfig.textSize === 'giant' ? 'text-base sm:text-lg lg:text-base' :
+    themeConfig.textSize === 'xlarge' ? 'text-sm sm:text-base lg:text-sm' : 
+    themeConfig.textSize === 'large' ? 'text-sm sm:text-base lg:text-sm' :
+    'text-xs sm:text-sm lg:text-xs';
 
   const isAnyModalOpen = isHelpRequestOpen || isSOSOpen || isCitySelectorOpen || isOrganizeModalOpen || isNewToolLoanOpen || Boolean(selectedLoanForReceipt) || isThemeCustomizerOpen || isSovereignModalOpen || isSubscriptionModalOpen || isAIAssistantOpen || isP2PSyncOpen;
 
@@ -470,6 +474,8 @@ export default function App() {
         onOpenCitySelector={() => setIsCitySelectorOpen(true)}
         userMode={userMode}
         onChangeUserMode={setUserMode}
+        deviceMode={deviceMode}
+        onChangeDeviceMode={setDeviceMode}
         textSize={themeConfig.textSize}
         onChangeTextSize={handleUpdateTextSize}
         onTriggerSOS={() => setIsSOSOpen(true)}
@@ -487,6 +493,29 @@ export default function App() {
         isLGMVerified={lgmGeoStatus.verified && lgmGeoStatus.isLGM}
         onVerifyGeolocation={() => setIsSubscriptionModalOpen(true)}
       />
+
+      {/* Device Mode Active Indicator */}
+      {deviceMode !== 'auto' && (
+        <aside aria-label="Mode d'affichage simulé" className="bg-stone-950 text-amber-200 border-b-2 border-amber-400 px-3 py-1.5 text-xs font-bold flex flex-wrap items-center justify-between gap-2 shadow-inner">
+          <div className="flex items-center gap-2">
+            {deviceMode === 'pc' ? <Monitor className="w-4 h-4 text-amber-400 flex-shrink-0" /> :
+             deviceMode === 'tablet' ? <Tablet className="w-4 h-4 text-amber-400 flex-shrink-0" /> :
+             <Smartphone className="w-4 h-4 text-amber-400 flex-shrink-0" />}
+            <span>
+              Format d'affichage : <strong>{
+                deviceMode === 'pc' ? 'PC / Bureau (Grand écran, proportions compactes)' :
+                deviceMode === 'tablet' ? 'Tablette (2 colonnes équilibrées)' : 'Smartphone Mobile (1 colonne, grandes touches tactiles)'
+              }</strong>
+            </span>
+          </div>
+          <button
+            onClick={() => setDeviceMode('auto')}
+            className="px-2 py-0.5 rounded bg-amber-400 text-stone-950 text-[11px] font-black cursor-pointer transition hover:bg-amber-300"
+          >
+            Rétablir Détection Automatique
+          </button>
+        </aside>
+      )}
 
       {/* LA GRANDE-MOTTE 1ère ANNÉE GRATUITE — GÉOLOCALISATION OBLIGATOIRE BANNER */}
       {currentCity.name === 'La Grande-Motte' && (
@@ -631,10 +660,31 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-6 py-3 sm:py-6 overflow-x-hidden">
-        {/* Navigation Tabs (Responsive grid on mobile, always fits within 100vw) */}
-        <div className={`grid grid-cols-4 gap-1 sm:gap-2 mb-4 sm:mb-6 w-full max-w-xl mx-auto p-1 sm:p-1.5 rounded-2xl border-2 shadow-xs transition-all ${
+      {/* Main Content Area (Adapts dynamically to deviceMode: Smartphone frame, Tablet frame, or PC Desktop) */}
+      <main className={`flex-1 transition-all overflow-x-hidden ${
+        deviceMode === 'mobile'
+          ? 'w-full max-w-md mx-auto px-3 py-3 my-3 rounded-[32px] border-[6px] border-stone-800 shadow-2xl bg-inherit ring-4 ring-black/10'
+          : deviceMode === 'tablet'
+          ? 'w-full max-w-3xl mx-auto px-4 py-4 my-3 rounded-[24px] border-[6px] border-stone-800 shadow-2xl bg-inherit ring-4 ring-black/10'
+          : 'w-full max-w-7xl mx-auto px-2.5 sm:px-6 py-2 sm:py-4'
+      }`}>
+        {/* Device frame header indicator if simulating phone or tablet on PC */}
+        {deviceMode === 'mobile' && (
+          <div className="flex items-center justify-between px-3 py-1 mb-2.5 bg-stone-900 text-white rounded-xl text-[10px] font-black tracking-wider">
+            <span>9:41</span>
+            <span className="w-16 h-2.5 bg-stone-700 rounded-full" />
+            <span>5G · 100%</span>
+          </div>
+        )}
+        {deviceMode === 'tablet' && (
+          <div className="flex items-center justify-between px-3 py-1 mb-2.5 bg-stone-900 text-white rounded-xl text-[10px] font-black tracking-wider">
+            <span>Format Tablette iPad / Android (Largeur 768px · 2 colonnes équilibrées)</span>
+            <span>100%</span>
+          </div>
+        )}
+
+        {/* Navigation Tabs (Responsive grid on mobile, sleek and balanced on PC) */}
+        <div className={`grid grid-cols-4 gap-1 sm:gap-2 mb-3 sm:mb-4 w-full max-w-xl md:max-w-2xl mx-auto p-1 rounded-xl border shadow-xs transition-all ${
           themeConfig.themeId === 'gold-white'
             ? 'bg-white border-amber-300 shadow-gold'
             : themeConfig.themeId === 'gold-dark'
@@ -648,7 +698,7 @@ export default function App() {
           <button
             id="tab-nav-accueil"
             onClick={() => setActiveTab('accueil')}
-            className={`py-2.5 sm:py-3.5 px-1 sm:px-4 rounded-xl font-black text-xs sm:text-base flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition cursor-pointer min-w-0 w-full overflow-hidden ${
+            className={`py-1.5 sm:py-2 px-1 sm:px-3 rounded-lg font-black text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer min-w-0 w-full overflow-hidden ${
               activeTab === 'accueil'
                 ? (themeConfig.themeId === 'gold-white'
                     ? 'bg-amber-500 text-stone-950 font-black shadow-md'
@@ -658,7 +708,7 @@ export default function App() {
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100')
             }`}
           >
-            <Home className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+            <Home className="w-4 h-4 sm:w-4.5 sm:h-4.5 flex-shrink-0" />
             <span className="truncate max-w-full text-center block">Accueil</span>
           </button>
 
@@ -666,10 +716,10 @@ export default function App() {
             <button
               id="tab-nav-viens"
               onClick={() => setIsHelpRequestOpen(true)}
-              className="py-2.5 sm:py-3.5 px-1 sm:px-3 rounded-xl font-black text-xs sm:text-base flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-amber-900 bg-amber-100/90 hover:bg-amber-200 border border-amber-300 transition cursor-pointer active:scale-95 min-w-0 w-full overflow-hidden"
+              className="py-1.5 sm:py-2 px-1 sm:px-3 rounded-lg font-black text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 text-amber-900 bg-amber-100/90 hover:bg-amber-200 border border-amber-300 transition cursor-pointer active:scale-95 min-w-0 w-full overflow-hidden"
               title="Demander de l'aide par dictée vocale ou vidéo"
             >
-              <Mic className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 flex-shrink-0 animate-pulse" />
+              <Mic className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-orange-600 flex-shrink-0 animate-pulse" />
               <span className="truncate max-w-full text-center block">Viens !</span>
             </button>
           ) : (
@@ -679,7 +729,7 @@ export default function App() {
                 setSelectedVillageCategory(undefined);
                 setActiveTab('village');
               }}
-              className={`py-2.5 sm:py-3.5 px-1 sm:px-4 rounded-xl font-black text-xs sm:text-base flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition cursor-pointer min-w-0 w-full overflow-hidden ${
+              className={`py-1.5 sm:py-2 px-1 sm:px-3 rounded-lg font-black text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer min-w-0 w-full overflow-hidden ${
                 activeTab === 'village'
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : (isDark
@@ -687,7 +737,7 @@ export default function App() {
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100')
               }`}
             >
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300 flex-shrink-0" />
+              <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-300 flex-shrink-0" />
               <span className="truncate max-w-full text-center block">50 Idées</span>
             </button>
           )}
@@ -695,7 +745,7 @@ export default function App() {
           <button
             id="tab-nav-evenements"
             onClick={() => setActiveTab('evenements')}
-            className={`py-2.5 sm:py-3.5 px-1 sm:px-4 rounded-xl font-black text-xs sm:text-base flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition cursor-pointer min-w-0 w-full overflow-hidden ${
+            className={`py-1.5 sm:py-2 px-1 sm:px-3 rounded-lg font-black text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer min-w-0 w-full overflow-hidden ${
               activeTab === 'evenements'
                 ? 'bg-emerald-600 text-white shadow-md'
                 : (isDark
@@ -706,13 +756,13 @@ export default function App() {
           >
             {userMode === 'senior' ? (
               <>
-                <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500 flex-shrink-0" />
+                <Heart className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-rose-500 flex-shrink-0" />
                 <span className="hidden sm:inline truncate max-w-full text-center font-black">Chaleur Humaine</span>
                 <span className="sm:hidden truncate max-w-full text-[11px] leading-tight text-center font-black block">Chaleur</span>
               </>
             ) : (
               <>
-                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-amber-200 flex-shrink-0" />
+                <Calendar className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-200 flex-shrink-0" />
                 <span className="truncate max-w-full text-center block">Moments</span>
               </>
             )}
@@ -721,10 +771,10 @@ export default function App() {
           <button
             id="tab-nav-urgences"
             onClick={() => setIsSOSOpen(true)}
-            className="py-2.5 sm:py-3.5 px-1 sm:px-4 rounded-xl font-black text-xs sm:text-base flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-red-700 bg-red-100 hover:bg-red-200 border-2 border-red-300 transition cursor-pointer active:scale-95 min-w-0 w-full overflow-hidden"
+            className="py-1.5 sm:py-2 px-1 sm:px-3 rounded-lg font-black text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 text-red-700 bg-red-100 hover:bg-red-200 border-2 border-red-300 transition cursor-pointer active:scale-95 min-w-0 w-full overflow-hidden"
             title="Alerte secours et 3 voisins"
           >
-            <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 flex-shrink-0 animate-bounce" />
+            <AlertTriangle className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-red-600 flex-shrink-0 animate-bounce" />
             <span className="truncate max-w-full font-black text-center block">SOS</span>
           </button>
         </div>
@@ -736,6 +786,7 @@ export default function App() {
               currentCity={currentCity}
               textSize={themeConfig.textSize}
               themeConfig={themeConfig}
+              deviceMode={deviceMode}
               events={communityEvents}
               toolLoans={toolLoans}
               activeRequests={activeRequests}

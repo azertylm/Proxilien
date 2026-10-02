@@ -1,5 +1,7 @@
 export type UserMode = 'senior' | 'jeune' | 'tv';
 
+export type DeviceMode = 'auto' | 'pc' | 'tablet' | 'mobile';
+
 export type TextSize = 'normal' | 'large' | 'xlarge' | 'giant';
 
 export type ThemeId = 
@@ -243,5 +245,6 @@ export type AlphabettePlanId =
   | 'byok_app'           // 39 € / an - Application ProxiLien avec clé Mistral client
   | 'comfort_app'        // 59 € / an - Application ProxiLien avec clé Mistral Alphabette incluse
   | 'bouquet_byok'       // 99 € / an - TOUTES les applications avec sa propre clé
-  | 'bouquet_integral';  // 199 € / an - TOUTES les applications avec clés Mistral gérées et incluses
+  | 'bouquet_integral'
+  | 'municipal_licence';  // 199 € / an - TOUTES les applications avec clés Mistral gérées et incluses
 

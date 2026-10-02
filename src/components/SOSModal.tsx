@@ -64,7 +64,7 @@ export const SOSModal: React.FC<SOSModalProps> = ({ isOpen, onClose, cityName })
       <div 
         role="dialog" 
         aria-modal="true"
-        className="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-red-500 max-h-[92vh] flex flex-col"
+        className="w-full max-w-xl bg-white text-slate-900 rounded-3xl shadow-2xl overflow-hidden border-4 border-red-500 max-h-[88vh] flex flex-col text-sm"
       >
         {/* Modal Header */}
         <div className="bg-red-600 text-white p-4 sm:p-5 flex items-center justify-between">

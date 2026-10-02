@@ -68,7 +68,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
 
   const isDark = themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark';
-  const isGold = themeConfig.themeId === 'gold-white' || themeConfig.themeId === 'gold-dark';
+  const isGoldWhite = themeConfig.themeId === 'gold-white';
+  const isGoldDark = themeConfig.themeId === 'gold-dark';
 
   if (!isOpen) return null;
 
@@ -171,12 +172,14 @@ Ton : chaleureux, civique, bienveillant, clair et valorisant le lien social et l
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs overflow-y-auto animate-in fade-in">
-      <div className={`relative w-full max-w-2xl rounded-3xl p-4 sm:p-6 shadow-2xl border-2 my-auto h-[88vh] max-h-[750px] flex flex-col justify-between overflow-hidden ${
-        isGold
-          ? 'bg-stone-900 border-amber-500/80 text-stone-100 shadow-gold-lg'
+      <div className={`relative w-full max-w-2xl rounded-3xl p-4 sm:p-6 shadow-2xl border-2 my-auto h-[88vh] max-h-[750px] flex flex-col justify-between overflow-hidden text-sm ${
+        isGoldDark
+          ? 'bg-stone-950 border-amber-500 text-stone-100 shadow-gold-lg'
           : isDark
-          ? 'bg-slate-900 border-slate-700 text-white'
-          : 'bg-white border-slate-200 text-slate-900'
+          ? 'bg-slate-900 border-slate-700 text-white shadow-2xl'
+          : isGoldWhite
+          ? 'bg-white border-amber-300 text-slate-900 shadow-gold'
+          : 'bg-white border-slate-200 text-slate-900 shadow-2xl'
       }`}>
         {/* Modal Header */}
         <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-200/50 dark:border-slate-800 flex-shrink-0">

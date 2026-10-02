@@ -91,7 +91,7 @@ export const SeniorHelpTrackingSection: React.FC<SeniorHelpTrackingSectionProps>
                       </span>
                     )}
                   </div>
-                  <h2 className={`font-black tracking-tight mt-1 break-words ${titleScaleClass} ${
+                  <h2 className={`font-black tracking-tight mt-1 leading-snug ${titleScaleClass} ${
                     isGold ? 'text-amber-900 dark:text-amber-300' : (isDark ? 'text-white' : 'text-slate-950')
                   }`}>
                     {req.title}
@@ -125,11 +125,11 @@ export const SeniorHelpTrackingSection: React.FC<SeniorHelpTrackingSectionProps>
                   <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-orange-700 dark:text-orange-400 block">
                     {isArrived ? 'Statut actuel' : 'Heure d\'arrivée annoncée'}
                   </span>
-                  <div className="text-xl sm:text-3xl font-black tracking-tight leading-tight text-slate-950 dark:text-white break-words">
+                  <div className="text-xl sm:text-3xl font-black tracking-tight leading-tight text-slate-950 dark:text-white">
                     {isArrived ? 'À votre porte maintenant !' : req.estimatedArrivalTime || 'Vers 14h30'}
                   </div>
                   {req.arrivalTransport && (
-                    <div className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 mt-0.5 break-words">
+                    <div className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
                       <Navigation className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
                       <span>Déplacement : {req.arrivalTransport}</span>
                     </div>
@@ -147,7 +147,7 @@ export const SeniorHelpTrackingSection: React.FC<SeniorHelpTrackingSectionProps>
                     <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block truncate">
                       Votre voisin veilleur
                     </span>
-                    <div className="font-black text-sm sm:text-base text-slate-900 dark:text-white break-words">
+                    <div className="font-black text-sm sm:text-base text-slate-900 dark:text-white">
                       {req.helperName || 'Lucas Valentin'}
                     </div>
                     <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">

@@ -171,7 +171,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({
       <div 
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-amber-300 flex flex-col max-h-[92vh]"
+        className="w-full max-w-3xl bg-white text-slate-900 rounded-3xl shadow-2xl overflow-hidden border-2 border-amber-300 flex flex-col max-h-[88vh] text-sm"
       >
         {/* Header Modal */}
         <div className="bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700 text-white p-5 flex items-center justify-between">

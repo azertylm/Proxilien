@@ -84,12 +84,12 @@ export const CommunityEventsSection: React.FC<CommunityEventsSectionProps> = ({
                 {events.length} rencontres prévues
               </span>
             </div>
-            <h2 className={`text-2xl sm:text-4xl font-black ${
+            <h2 className={`text-xl sm:text-2xl lg:text-3xl font-black ${
               isGoldTheme ? 'text-gold-gradient' : ''
             }`}>
               Rencontres & Moments entre Voisins ☕🍰
             </h2>
-            <p className={`text-base sm:text-lg mt-2 max-w-2xl font-medium ${
+            <p className={`text-xs sm:text-sm mt-1 max-w-2xl font-medium ${
               isGoldTheme ? (themeConfig.themeId === 'gold-dark' ? 'text-amber-100' : 'text-slate-700') :
               themeConfig.themeId === 'dark' ? 'text-slate-300' :
               themeConfig.themeId === 'high-contrast' ? 'text-yellow-200' : 'text-orange-50'
@@ -98,22 +98,22 @@ export const CommunityEventsSection: React.FC<CommunityEventsSectionProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
             {onBackToHome && (
               <button
                 type="button"
                 onClick={onBackToHome}
-                className="bg-white/20 hover:bg-white/30 text-white font-extrabold px-5 py-4 rounded-2xl flex items-center gap-2 text-base cursor-pointer transition border border-white/40 active:scale-95 shadow-md"
+                className="bg-white/20 hover:bg-white/30 text-white font-black px-4 py-2.5 rounded-xl flex items-center gap-1.5 text-xs sm:text-sm cursor-pointer transition border border-white/40 active:scale-95 shadow-xs"
               >
-                <Home className="w-5 h-5 text-amber-200" />
+                <Home className="w-4 h-4 text-amber-200" />
                 <span>← Revenir à l'accueil</span>
               </button>
             )}
             <button
               onClick={onOpenOrganizeModal}
-              className="bg-white hover:bg-amber-50 text-orange-700 font-extrabold px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 text-base sm:text-lg cursor-pointer transition transform hover:scale-105 active:scale-95 border-2 border-amber-300"
+              className="bg-white hover:bg-amber-50 text-orange-700 font-black px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 text-xs sm:text-sm cursor-pointer transition transform active:scale-95 border border-amber-300"
             >
-              <Plus className="w-6 h-6 text-orange-600 stroke-[3]" />
+              <Plus className="w-4 h-4 text-orange-600 stroke-[3]" />
               <span>Organiser une rencontre</span>
             </button>
           </div>
@@ -121,13 +121,13 @@ export const CommunityEventsSection: React.FC<CommunityEventsSectionProps> = ({
       </div>
 
       {/* Filter by Quartier */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={`text-base font-extrabold mr-1 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className={`text-xs font-bold mr-1 ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
           Filtrer par quartier :
         </span>
         <button
           onClick={() => setSelectedQuartierFilter('all')}
-          className={`px-4 py-2.5 rounded-xl text-base font-black transition cursor-pointer ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-black transition cursor-pointer ${
             selectedQuartierFilter === 'all'
               ? 'bg-orange-600 text-white shadow-xs'
               : isDark

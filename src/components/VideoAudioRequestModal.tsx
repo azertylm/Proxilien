@@ -195,7 +195,7 @@ export const VideoAudioRequestModal: React.FC<VideoAudioRequestModalProps> = ({
       <div 
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[96vh] sm:max-h-[92vh] my-auto"
+        className="w-full max-w-2xl bg-white text-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[94vh] sm:max-h-[88vh] my-auto text-sm"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-3.5 py-2.5 sm:p-5 flex items-center justify-between flex-shrink-0">

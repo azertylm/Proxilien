@@ -193,7 +193,7 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
                       }`}>
                         Reçu {loan.receiptCode}
                       </span>
-                      <h3 className={`font-black text-sm sm:text-base break-words line-clamp-2 ${
+                      <h3 className={`font-black text-sm sm:text-base leading-snug line-clamp-2 ${
                         isDark ? 'text-white' : 'text-stone-900'
                       }`}>
                         {loan.toolName}
@@ -307,14 +307,14 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h4 className={`font-black text-sm break-words ${isDark ? 'text-white' : 'text-stone-900'}`}>
+                    <h4 className={`font-black text-sm leading-snug ${isDark ? 'text-white' : 'text-stone-900'}`}>
                       {loan.toolName}
                     </h4>
                     <span className={`text-[10px] font-mono flex-shrink-0 ${isDark ? 'text-slate-400' : 'text-stone-400'}`}>
                       {loan.receiptCode}
                     </span>
                   </div>
-                  <p className={`text-xs break-words line-clamp-1 sm:line-clamp-none ${isDark ? 'text-slate-300' : 'text-stone-500'}`}>
+                  <p className={`text-xs leading-normal line-clamp-1 sm:line-clamp-none ${isDark ? 'text-slate-300' : 'text-stone-500'}`}>
                     Emprunté par <span className={`font-bold ${isDark ? 'text-indigo-300' : 'text-stone-700'}`}>{loan.borrowerName}</span> ({loan.borrowerQuartier}) · Restitué le {loan.actualReturnDate || loan.expectedReturnDate}
                   </p>
                 </div>
