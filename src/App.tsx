@@ -537,7 +537,7 @@ export default function App() {
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-stone-100 mt-1 font-semibold leading-relaxed">
-                    Pour tous les habitants, aînés, commerces et associations de <strong className="text-amber-300 font-black underline decoration-amber-400 underline-offset-2">La Grande-Motte</strong> : validez votre géolocalisation pour activer votre <span className="text-emerald-300 font-extrabold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/50">Pass 1ère année 100 % gratuite</span> (valeur 59 € offerte par ALPHABETTE SASU et la Ville).
+                    Pour tous les habitants, aînés, commerces et associations de <strong className="text-amber-300 font-black underline decoration-amber-400 underline-offset-2">La Grande-Motte</strong> : validez votre géolocalisation pour activer votre <span className="text-emerald-300 font-extrabold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/50">Pass 1ère année 100 % gratuite</span> (valeur 59 € offerte par ALPHABETTE et la Ville).
                   </p>
                 </div>
               </div>
@@ -585,7 +585,7 @@ export default function App() {
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-stone-200 mt-1 font-semibold">
-                    1ère année 100 % offerte par ALPHABETTE SASU & la Ville (0 € au lieu de 59 €/an).
+                    1ère année 100 % offerte par ALPHABETTE & la Ville (0 € au lieu de 59 €/an).
                   </p>
                 </div>
               </div>
@@ -1040,7 +1040,7 @@ export default function App() {
 
           <div className="pt-2 border-t border-slate-200/50 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500 dark:text-slate-400">
             <span>
-              Édité par <strong>ALPHABETTE SASU</strong> (fondée par Valentin RICHAUD) · Zéro pistage publicitaire, conformité RGPD stricte.
+              Édité par <strong>ALPHABETTE</strong> (fondée par Valentin RICHAUD) · Zéro pistage publicitaire, conformité RGPD stricte.
             </span>
             <span>
               Hébergement souverain OVH France · Moteur Mistral AI Europe · <span className="font-mono">alphabette.fr</span>

@@ -207,7 +207,7 @@ export async function askAI(prompt: string, options: AskAIOptions = {}): Promise
       timestamp: new Date().toISOString(),
       accessTier: tier,
       hostingInfo: {
-        publisher: 'ALPHABETTE SASU',
+        publisher: 'ALPHABETTE',
         founder: 'Valentin RICHAUD',
         serverLocation: 'Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)',
         hubUrl: 'http://alphabette.fr',

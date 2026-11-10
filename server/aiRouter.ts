@@ -278,7 +278,7 @@ function generateResilientLocalFallback(
       "Bonjour ! Voici la grille officielle ALPHABETTE :\n• Habitants de La Grande-Motte : 1ère année 100 % GRATUITE (avec géolocalisation obligatoire).\n• Formule BYOK (Clé client Mistral) : 39 € / an.\n• Formule Confort (Clé Alphabette incluse) : 59 € / an (après 7 jours d'essai offerts).\n• Pass Bouquet BYOK (Toutes les applications) : 99 € / an.\n• Pass Bouquet Intégral (Toutes les applications + clés gérées) : 199 € / an.\nDécouvrez toutes les applications de la suite sur http://alphabette.fr.";
   } else {
     text =
-      "Bonjour ! L'assistant citoyen ProxiLien est à votre service. Votre échange s'inscrit dans les valeurs de souveraineté numérique française (Mistral AI), de respect strict du RGPD et d'entraide de proximité portées par ALPHABETTE SASU. N'hésitez pas à solliciter vos voisins ou à proposer votre aide.";
+      "Bonjour ! L'assistant citoyen ProxiLien est à votre service. Votre échange s'inscrit dans les valeurs de souveraineté numérique française (Mistral AI), de respect strict du RGPD et d'entraide de proximité portées par ALPHABETTE. N'hésitez pas à solliciter vos voisins ou à proposer votre aide.";
   }
 
   return {
@@ -293,7 +293,7 @@ function generateResilientLocalFallback(
     timestamp: new Date().toISOString(),
     accessTier,
     hostingInfo: {
-      publisher: 'ALPHABETTE SASU',
+      publisher: 'ALPHABETTE',
       founder: 'Valentin RICHAUD',
       serverLocation: 'Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)',
       hubUrl: 'http://alphabette.fr',
@@ -312,7 +312,7 @@ export async function handleAIRequest(payload: AIRequestPayload): Promise<AIResp
   const tier: MistralAccessTier = payload.tier || 'trial';
 
   const hostingInfo = {
-    publisher: 'ALPHABETTE SASU',
+    publisher: 'ALPHABETTE',
     founder: 'Valentin RICHAUD',
     serverLocation: 'Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)',
     hubUrl: 'http://alphabette.fr',
@@ -321,7 +321,7 @@ export async function handleAIRequest(payload: AIRequestPayload): Promise<AIResp
 
   const systemInstruction =
     payload.systemInstruction ||
-    `Tu es l'assistant de conception, de support et d'administration de ProxiLien, la plateforme d'entraide locale et de communication citoyenne éditée par ALPHABETTE SASU (fondée par Valentin RICHAUD).
+    `Tu es l'assistant de conception, de support et d'administration de ProxiLien, la plateforme d'entraide locale et de communication citoyenne éditée par ALPHABETTE (fondée par Valentin RICHAUD).
 Souveraineté exclusive : Mistral AI (France / Europe). Aucune donnée d'utilisateur n'est réutilisée pour l'entraînement.
 Gratuité : 1ère année 100 % offerte pour tous les habitants de La Grande-Motte (avec géolocalisation obligatoire).
 Grille tarifaire : Formule BYOK 39 € / an, Formule Confort 59 € / an, Bouquet BYOK 99 € / an, Bouquet Intégral 199 € / an.
@@ -492,7 +492,7 @@ export function getAiStatus() {
       tier3: "Mode managé : Clé Alphabette gérée et incluse",
     },
     publisher: {
-      name: "ALPHABETTE SASU",
+      name: "ALPHABETTE",
       founder: "Valentin RICHAUD",
       hosting: "Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)",
       privacy: "Zéro pistage publicitaire, conformité RGPD stricte, aucune réutilisation des données d'entraînement",

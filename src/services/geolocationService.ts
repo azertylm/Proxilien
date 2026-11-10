@@ -1,6 +1,6 @@
 /**
  * Service de Géolocalisation Obligatoire — La Grande-Motte (34280)
- * ALPHABETTE SASU — ProxiLien
+ * ALPHABETTE — ProxiLien
  * 
  * Règle d'éligibilité :
  * La 1ère année est 100 % gratuite pour tous les habitants, aînés, associations

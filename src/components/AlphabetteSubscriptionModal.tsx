@@ -159,7 +159,7 @@ export const AlphabetteSubscriptionModal: React.FC<AlphabetteSubscriptionModalPr
                 <h2 className={`text-base sm:text-lg font-black font-['Outfit'] ${
                   isGoldWhite ? 'text-amber-950' : (isDark ? 'text-white' : 'text-slate-900')
                 }`}>
-                  Grille Tarifaire Officielle · ALPHABETTE SASU
+                  Grille Tarifaire Officielle · ALPHABETTE
                 </h2>
                 <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                   Mistral AI Exclusif · RGPD Native
@@ -426,7 +426,7 @@ export const AlphabetteSubscriptionModal: React.FC<AlphabetteSubscriptionModalPr
                         </span>
                       </div>
                       <p className={`text-xs mt-1.5 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                        Grâce au partenariat d'expérimentation entre <strong>ALPHABETTE SASU</strong> et la commune de <strong>La Grande-Motte</strong>, tous les résidents, aînés, commerces et associations bénéficient d'un an d'accès offert d'une valeur de 59 €.
+                        Grâce au partenariat d'expérimentation entre <strong>ALPHABETTE</strong> et la commune de <strong>La Grande-Motte</strong>, tous les résidents, aînés, commerces et associations bénéficient d'un an d'accès offert d'une valeur de 59 €.
                       </p>
                       <p className="text-xs text-amber-700 dark:text-amber-400 font-bold mt-1">
                         Condition légale : Géolocalisation obligatoire sur le périmètre communal (rayon de 6,5 km).

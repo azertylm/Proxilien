@@ -1136,7 +1136,7 @@ export const P2PSyncModal: React.FC<P2PSyncModalProps> = ({
           <div className="flex flex-col sm:flex-row items-center gap-2">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-              <span>Protocole P2P Souverain · <strong>ALPHABETTE SASU</strong> pour <strong>La Grande-Motte</strong></span>
+              <span>Protocole P2P Souverain · <strong>ALPHABETTE</strong> pour <strong>La Grande-Motte</strong></span>
             </div>
             <span className="hidden sm:inline">·</span>
             <a

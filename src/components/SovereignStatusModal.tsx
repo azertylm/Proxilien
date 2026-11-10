@@ -98,7 +98,7 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
         apiKey: activeTab === 'byok' ? byokKey : undefined,
         baseUrl: activeTab === 'local_mac' ? 'http://localhost:11434/v1' : byokBaseUrl,
         model: byokModel,
-        systemInstruction: "Tu es l'assistant citoyen souverain ProxiLien édité par ALPHABETTE SASU. Réponds de façon concise, rassurante et professionnelle.",
+        systemInstruction: "Tu es l'assistant citoyen souverain ProxiLien édité par ALPHABETTE. Réponds de façon concise, rassurante et professionnelle.",
       });
       setTestResult(res);
     } catch (e) {
@@ -135,7 +135,7 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Édité par <strong>ALPHABETTE SASU</strong> (fondée par Valentin RICHAUD) · Données hébergées en France (OVH)
+                Édité par <strong>ALPHABETTE</strong> (fondée par Valentin RICHAUD) · Données hébergées en France (OVH)
               </p>
             </div>
           </div>
@@ -248,7 +248,7 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
-                Tout nouvel inscrit bénéficie d'un accès complet et immédiat à l'application ProxiLien, alimenté par la clé API Mistral propriétaire fournie et financée par ALPHABETTE SASU.
+                Tout nouvel inscrit bénéficie d'un accès complet et immédiat à l'application ProxiLien, alimenté par la clé API Mistral propriétaire fournie et financée par ALPHABETTE.
               </p>
               {trialInfo.isExpired && (
                 <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-xs flex items-center justify-between">
@@ -435,7 +435,7 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
 
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500 text-[11px]">
-              ALPHABETTE SASU · Plateforme Souveraine Européenne
+              ALPHABETTE · Plateforme Souveraine Européenne
             </span>
             <button
               type="button"

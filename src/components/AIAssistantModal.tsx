@@ -103,7 +103,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     setInputText('');
     setIsLoading(true);
 
-    const systemInstruction = `Tu es l'assistant de conception, de support et d'administration de ProxiLien, la plateforme de mise en relation de proximité, d'entraide locale et de communication citoyenne éditée par ALPHABETTE SASU (fondée par Valentin RICHAUD). Ville actuelle : ${currentCity.name}.
+    const systemInstruction = `Tu es l'assistant de conception, de support et d'administration de ProxiLien, la plateforme de mise en relation de proximité, d'entraide locale et de communication citoyenne éditée par ALPHABETTE (fondée par Valentin RICHAUD). Ville actuelle : ${currentCity.name}.
 
 SOUVERAINETÉ & ENGAGEMENT RGPD (MISTRAL AI EXCLUSIF) :
 - Toutes les applications reposent rigoureusement et exclusivement sur Mistral AI (entreprise française, infrastructures en Europe).
