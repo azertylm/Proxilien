@@ -2,13 +2,13 @@ import express from "express";
 import path from "path";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
-import { handleAIRequest, AIRequestPayload, getMistralCredentials } from "./server/aiRouter.js";
+import { handleAIRequest, AIRequestPayload, getAiStatus } from "./server/aiRouter.js";
 
 dotenv.config();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json());
 
@@ -25,52 +25,7 @@ async function startServer() {
 
   // AI Router Status & Configuration (Mistral AI Exclusif)
   app.get("/api/ai/status", (_req, res) => {
-    const mistralCreds = getMistralCredentials();
-
-    res.json({
-      status: "active",
-      provider: "Mistral AI (France / Europe - RGPD Native)",
-      hubUrl: "http://alphabette.fr",
-      mistralCloud: {
-        baseUrl: mistralCreds.baseUrl,
-        configured: Boolean(mistralCreds.apiKey),
-        model: mistralCreds.model,
-      },
-      mistralLocal: {
-        url: mistralCreds.localUrl,
-        model: mistralCreds.localModel,
-        support: "Mac Local (Ollama / Metal)",
-      },
-      accessTiers: {
-        tier1: "Période d'essai (7 jours offerts) : Clé propriétaire Alphabette",
-        tier2: "Mode BYOK (Bring Your Own Key) : Clé client personnelle Mistral",
-        tier3: "Mode managé : Clé Alphabette gérée et incluse",
-      },
-      publisher: {
-        name: "ALPHABETTE SASU",
-        founder: "Valentin RICHAUD",
-        hosting: "Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)",
-        privacy: "Zéro pistage publicitaire, conformité RGPD stricte, aucune réutilisation des données d'entraînement",
-        pricingGrid: {
-          pilotLaGrandeMotte: "100% GRATUIT la 1ère année (avec géolocalisation obligatoire)",
-          applicationIndividuelle: {
-            byok: "39 € / an (Formule BYOK - Clé client)",
-            confort: "59 € / an (Formule Confort - Clé Alphabette incluse)",
-          },
-          bouquetAlphabette: {
-            byok: "99 € / an (Pass Bouquet BYOK - Accès illimité à toute la suite)",
-            integral: "199 € / an (Pass Bouquet Intégral - Toute la suite avec clés Mistral incluses)",
-          },
-          catalog: [
-            "PROXILIEN (Entraide de proximité et lien citoyen)",
-            "LIDARSOL (Cadastre solaire & géométrie LiDAR)",
-            "OSOLAR (Optimisation photovoltaïque citoyenne)",
-            "INFOS PERSO GRAND FORMAT (Portail aînés haute lisibilité)",
-            "L'ŒIL DE L'ATELIER 3D (Gestion et conception atelier 3D)",
-          ],
-        },
-      },
-    });
+    res.json(getAiStatus());
   });
 
   // Main Unified AI Endpoint (Strategy / Provider Pattern)

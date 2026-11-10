@@ -46,6 +46,13 @@ export interface AIResponsePayload {
   };
 }
 
+/**
+ * Variables d'environnement : celles du serveur Node, ou aucune dans le
+ * navigateur (version hébergée sans serveur, où l'utilisateur fournit sa clé).
+ */
+const env: Record<string, string | undefined> =
+  typeof process !== 'undefined' && process.env ? process.env : {};
+
 // Cooldown des modèles temporairement saturés (429 Rate Limit)
 const mistralModelCooldowns = new Map<string, number>();
 
@@ -60,11 +67,11 @@ export function getMistralCredentials(): {
   localUrl: string;
   localModel: string;
 } {
-  const baseUrl = (process.env.AI_BASE_URL || 'https://api.mistral.ai/v1').replace(/\/+$/, '');
+  const baseUrl = (env.AI_BASE_URL || 'https://api.mistral.ai/v1').replace(/\/+$/, '');
   
   // Résolution clé API (support AI_API_KEY et MISTRAL_API_KEY)
-  const rawKey = (process.env.AI_API_KEY || process.env.MISTRAL_API_KEY || '').trim();
-  const rawModel = (process.env.MISTRAL_MODEL || '').trim();
+  const rawKey = (env.AI_API_KEY || env.MISTRAL_API_KEY || '').trim();
+  const rawModel = (env.MISTRAL_MODEL || '').trim();
 
   const isKeyPattern = (str: string) =>
     /^[A-Za-z0-9_-]{24,64}$/.test(str) &&
@@ -91,8 +98,8 @@ export function getMistralCredentials(): {
     resolvedModel = rawModel;
   }
 
-  const localUrl = (process.env.LOCAL_AI_URL || 'http://localhost:11434/v1').replace(/\/+$/, '');
-  const localModel = process.env.LOCAL_AI_MODEL || 'mistral-nemo';
+  const localUrl = (env.LOCAL_AI_URL || 'http://localhost:11434/v1').replace(/\/+$/, '');
+  const localModel = env.LOCAL_AI_MODEL || 'mistral-nemo';
 
   return {
     baseUrl,
@@ -456,4 +463,57 @@ Lien hub : Découvrir toutes les applications de la suite sur http://alphabette.
     "Moteur local souverain d'attente (Clé Mistral en cours d'activation)",
     tier
   );
+}
+
+/**
+ * Statut du moteur IA (route GET /api/ai/status), partagé avec la version
+ * hébergée sans serveur.
+ */
+export function getAiStatus() {
+  const mistralCreds = getMistralCredentials();
+
+      return {
+    status: "active",
+    provider: "Mistral AI (France / Europe - RGPD Native)",
+    hubUrl: "https://alphabette.fr",
+    mistralCloud: {
+      baseUrl: mistralCreds.baseUrl,
+      configured: Boolean(mistralCreds.apiKey),
+      model: mistralCreds.model,
+    },
+    mistralLocal: {
+      url: mistralCreds.localUrl,
+      model: mistralCreds.localModel,
+      support: "Mac Local (Ollama / Metal)",
+    },
+    accessTiers: {
+      tier1: "Période d'essai (7 jours offerts) : Clé propriétaire Alphabette",
+      tier2: "Mode BYOK (Bring Your Own Key) : Clé client personnelle Mistral",
+      tier3: "Mode managé : Clé Alphabette gérée et incluse",
+    },
+    publisher: {
+      name: "ALPHABETTE SASU",
+      founder: "Valentin RICHAUD",
+      hosting: "Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)",
+      privacy: "Zéro pistage publicitaire, conformité RGPD stricte, aucune réutilisation des données d'entraînement",
+      pricingGrid: {
+        pilotLaGrandeMotte: "100% GRATUIT la 1ère année (avec géolocalisation obligatoire)",
+        applicationIndividuelle: {
+          byok: "39 € / an (Formule BYOK - Clé client)",
+          confort: "59 € / an (Formule Confort - Clé Alphabette incluse)",
+        },
+        bouquetAlphabette: {
+          byok: "99 € / an (Pass Bouquet BYOK - Accès illimité à toute la suite)",
+          integral: "199 € / an (Pass Bouquet Intégral - Toute la suite avec clés Mistral incluses)",
+        },
+        catalog: [
+          "PROXILIEN (Entraide de proximité et lien citoyen)",
+          "LIDARSOL (Cadastre solaire & géométrie LiDAR)",
+          "OSOLAR (Optimisation photovoltaïque citoyenne)",
+          "INFOS PERSO GRAND FORMAT (Portail aînés haute lisibilité)",
+          "L'ŒIL DE L'ATELIER 3D (Gestion et conception atelier 3D)",
+        ],
+      },
+    },
+  };
 }
