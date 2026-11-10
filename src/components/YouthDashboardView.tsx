@@ -668,7 +668,7 @@ export const YouthDashboardView: React.FC<YouthDashboardViewProps> = ({
                 Attestation d'Engagement Citoyen
               </h3>
               <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Programme ProxiLien · Ville Pilote de {currentCity.name}
+                Programme ProxiLien · {currentCity.name}
               </p>
             </div>
 

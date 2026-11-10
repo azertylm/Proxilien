@@ -142,7 +142,7 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
                                 ? 'bg-orange-600 text-white'
                                 : 'bg-slate-200 text-slate-700'
                             }`}>
-                              {c.badge === 'pilote' ? 'Ville Pilote Officielle' : 'Active'}
+                              {c.badge === 'pilote' ? 'Ville pilote du projet' : 'Active'}
                             </span>
                           </div>
                           <p className="text-xs text-slate-600 mt-0.5">{c.description}</p>

@@ -268,7 +268,7 @@ export const ToolReceiptModal: React.FC<ToolReceiptModalProps> = ({
         {/* Footer */}
         <div className="bg-stone-100 p-3 text-center border-t border-stone-200">
           <p className="text-[11px] text-stone-500 font-semibold">
-            ProxiLien · Ville de La Grande-Motte · Registre local et sécurisé
+            ProxiLien · La Grande-Motte · Reçu enregistré sur cet appareil
           </p>
         </div>
       </div>

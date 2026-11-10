@@ -85,7 +85,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     "🥬 Comment participer aux ateliers du Jardin Partagé du Ponant ?",
     "📜 Comment fonctionne mon attestation officielle d'engagement bénévole ?",
     "🧰 Comment prêter un outil à un aîné avec le reçu numérique de confiance ?",
-    "💳 Quels sont les tarifs officiels ALPHABETTE (39€, 59€ et Bouquet 99€/199€) ?",
+    "💳 Quels sont les tarifs d'Alphabette ?",
   ];
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -110,13 +110,10 @@ SOUVERAINETÉ & ENGAGEMENT RGPD (MISTRAL AI EXCLUSIF) :
 - Zéro traçage publicitaire, aucune donnée d'utilisateur n'est réutilisée pour l'entraînement public des modèles.
 
 GRILLE TARIFAIRE OFFICIELLE & RÈGLE COMMUNE :
-1. Habitants de La Grande-Motte : 1ère année 100 % GRATUITE (avec géolocalisation obligatoire).
-2. Application Individuelle ProxiLien :
-   - Formule BYOK (Clé client) : 39 € / an.
-   - Formule Confort (Clé Alphabette incluse) : 59 € / an (après 7 jours d'essai offerts).
-3. Le Bouquet Alphabette (Accès à TOUTES les applications : ProxiLien, LidarSol, OSolar, Infos Perso Grand Format, L'Œil de l'Atelier 3D) :
-   - Pass Bouquet BYOK : 99 € / an.
-   - Pass Bouquet Intégral : 199 € / an.
+1. Habitants de La Grande-Motte : 1ère année offerte par Alphabette (géolocalisation demandée). Il n'existe aucun partenariat avec la mairie.
+2. ProxiLien seule : 15 € TTC par an (7 jours d'essai).
+3. Toutes les applications Alphabette : 40 € TTC par an.
+   Le paiement en ligne n'est pas encore ouvert : aujourd'hui, l'application s'utilise librement. Ne jamais annoncer d'autre prix.
 4. Hub central : Inviter l'utilisateur à découvrir toute la suite sur http://alphabette.fr.
 
 RÉSILIENCE LOCALE & P2P :

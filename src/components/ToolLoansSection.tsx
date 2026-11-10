@@ -342,7 +342,7 @@ export const ToolLoansSection: React.FC<ToolLoansSectionProps> = ({
       }`}>
         <span className={`flex items-center gap-1.5 font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-800'}`}>
           <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-          Chaque prêt génère une preuve SMS + attestation numérique vérifiable par le CCAS.
+          Chaque prêt génère un reçu, enregistré sur cet appareil.
         </span>
         <button
           onClick={onOpenNewLoanModal}

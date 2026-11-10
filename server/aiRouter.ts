@@ -275,7 +275,7 @@ function generateResilientLocalFallback(
     lower.includes('grande-motte')
   ) {
     text =
-      "Bonjour ! Voici la grille officielle ALPHABETTE :\n• Habitants de La Grande-Motte : 1ère année 100 % GRATUITE (avec géolocalisation obligatoire).\n• Formule BYOK (Clé client Mistral) : 39 € / an.\n• Formule Confort (Clé Alphabette incluse) : 59 € / an (après 7 jours d'essai offerts).\n• Pass Bouquet BYOK (Toutes les applications) : 99 € / an.\n• Pass Bouquet Intégral (Toutes les applications + clés gérées) : 199 € / an.\nDécouvrez toutes les applications de la suite sur http://alphabette.fr.";
+      "Bonjour ! Les tarifs prévus : 15 € TTC par an pour ProxiLien, ou 40 € TTC par an pour toutes les applications Alphabette (7 jours d'essai). La première année est offerte par Alphabette aux habitants de La Grande-Motte. Le paiement en ligne n'est pas encore ouvert : aujourd'hui, l'application s'utilise librement. Toutes les applications : https://alphabette.fr.";
   } else {
     text =
       "Bonjour ! L'assistant citoyen ProxiLien est à votre service. Votre échange s'inscrit dans les valeurs de souveraineté numérique française (Mistral AI), de respect strict du RGPD et d'entraide de proximité portées par ALPHABETTE. N'hésitez pas à solliciter vos voisins ou à proposer votre aide.";
@@ -324,7 +324,7 @@ export async function handleAIRequest(payload: AIRequestPayload): Promise<AIResp
     `Tu es l'assistant de conception, de support et d'administration de ProxiLien, la plateforme d'entraide locale et de communication citoyenne éditée par ALPHABETTE (fondée par Valentin RICHAUD).
 Souveraineté exclusive : Mistral AI (France / Europe). Aucune donnée d'utilisateur n'est réutilisée pour l'entraînement.
 Gratuité : 1ère année 100 % offerte pour tous les habitants de La Grande-Motte (avec géolocalisation obligatoire).
-Grille tarifaire : Formule BYOK 39 € / an, Formule Confort 59 € / an, Bouquet BYOK 99 € / an, Bouquet Intégral 199 € / an.
+Tarifs prévus : 15 € TTC / an pour ProxiLien, 40 € TTC / an pour toutes les applications Alphabette. Paiement en ligne pas encore ouvert.
 Lien hub : Découvrir toutes les applications de la suite sur http://alphabette.fr.`;
 
   // 1. Mode Local Mac (Ollama / Metal sur http://localhost:11434/v1)
@@ -497,14 +497,14 @@ export function getAiStatus() {
       hosting: "Serveurs Souverains OVH France (alphabette.fr / alphabette.eu)",
       privacy: "Zéro pistage publicitaire, conformité RGPD stricte, aucune réutilisation des données d'entraînement",
       pricingGrid: {
-        pilotLaGrandeMotte: "100% GRATUIT la 1ère année (avec géolocalisation obligatoire)",
+        pilotLaGrandeMotte: "1ère année offerte par Alphabette (géolocalisation demandée), sans partenariat avec la mairie",
         applicationIndividuelle: {
-          byok: "39 € / an (Formule BYOK - Clé client)",
-          confort: "59 € / an (Formule Confort - Clé Alphabette incluse)",
+          byok: "15 € TTC / an (ProxiLien seule)",
+          confort: "15 € TTC / an (ProxiLien seule)",
         },
         bouquetAlphabette: {
-          byok: "99 € / an (Pass Bouquet BYOK - Accès illimité à toute la suite)",
-          integral: "199 € / an (Pass Bouquet Intégral - Toute la suite avec clés Mistral incluses)",
+          byok: "40 € TTC / an (toutes les applications Alphabette)",
+          integral: "40 € TTC / an (toutes les applications Alphabette)",
         },
         catalog: [
           "PROXILIEN (Entraide de proximité et lien citoyen)",

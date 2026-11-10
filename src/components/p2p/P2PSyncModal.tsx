@@ -373,7 +373,7 @@ export const P2PSyncModal: React.FC<P2PSyncModalProps> = ({
             condition: 'excellent',
             lenderName: 'Lucas V.',
             borrowerName: 'Gérard (Aîné Ponant)',
-            borrowerPhone: '06 12 99 88 77',
+            borrowerPhone: '',
             borrowerQuartier: 'Le Ponant',
             loanDate: 'Ce matin',
             expectedReturnDate: 'Demain 18h',
@@ -386,7 +386,7 @@ export const P2PSyncModal: React.FC<P2PSyncModalProps> = ({
         communityEvents: [
           {
             id: `evt-sim-${Date.now()}`,
-            title: 'Atelier répar\'café & taille de rosiers entre voisins',
+            title: 'Exemple · Atelier répar\'café entre voisins',
             description: 'Amenez vos petits appareils en panne ou vos sécateurs ! Goûter offert par les aînés.',
             category: 'cafe',
             categoryLabel: 'Goûter & Bricolage',
@@ -404,17 +404,17 @@ export const P2PSyncModal: React.FC<P2PSyncModalProps> = ({
         citizenAlerts: [
           {
             id: `alt-sim-${Date.now()}`,
-            title: 'Alerte Rafales & Mer agitée (Passe du Port)',
+            title: 'Exemple · Alerte rafales et mer agitée',
             message: 'Avis de vent fort d\'Est à Sud-Est (force 6 à 7). Vigilance sur les pontons et promenades maritimes pour les marcheurs.',
             category: 'meteo',
             severity: 'vigilance',
             quartier: 'Port & Plages',
             timestamp: 'À l\'instant (P2P Direct)',
-            authorName: 'Capitainerie & Veilleurs Citoyens',
-            authorRole: 'Veille Maritime Locale',
+            authorName: 'Exemple fictif',
+            authorRole: 'Démonstration, aucune alerte réelle',
             encrypted: true,
-            signature: 'SIG-PORT-LGM-7491',
-            verified: true,
+            signature: 'EXEMPLE',
+            verified: false,
             receivedViaP2P: true,
           }
         ]

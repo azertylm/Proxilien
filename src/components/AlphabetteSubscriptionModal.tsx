@@ -419,17 +419,17 @@ export const AlphabetteSubscriptionModal: React.FC<AlphabetteSubscriptionModalPr
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className={`font-black text-base sm:text-lg ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          Habitants de La Grande-Motte : 1ère Année 100 % GRATUITE
+                          Habitants de La Grande-Motte : 1ère année gratuite
                         </span>
                         <span className="text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full bg-emerald-600 text-white">
-                          Offre Municipale Pilote
+                          Offre de lancement Alphabette
                         </span>
                       </div>
                       <p className={`text-xs mt-1.5 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                        Grâce au partenariat d'expérimentation entre <strong>ALPHABETTE</strong> et la commune de <strong>La Grande-Motte</strong>, tous les résidents, aînés, commerces et associations bénéficient d'un an d'accès offert d'une valeur de 59 €.
+                        <strong>Alphabette</strong> offre la première année aux résidents, aînés, commerces et associations de <strong>La Grande-Motte</strong>, où le projet est né. C'est une offre d'Alphabette seule : il n'existe aucun accord avec la mairie.
                       </p>
                       <p className="text-xs text-amber-700 dark:text-amber-400 font-bold mt-1">
-                        Condition légale : Géolocalisation obligatoire sur le périmètre communal (rayon de 6,5 km).
+                        Condition : géolocalisation obligatoire sur le périmètre communal (rayon de 6,5 km).
                       </p>
                     </div>
                   </div>
@@ -687,6 +687,10 @@ export const AlphabetteSubscriptionModal: React.FC<AlphabetteSubscriptionModalPr
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Formule Activée avec Succès !</span>
               </div>
+            ) : selectedPlan !== 'lgm_pilot_free' ? (
+              <div className="text-xs font-bold py-2 px-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-center">
+                Le paiement en ligne n'est pas encore ouvert : aujourd'hui, ProxiLien s'utilise librement.
+              </div>
             ) : (
               <button
                 type="button"
@@ -696,7 +700,7 @@ export const AlphabetteSubscriptionModal: React.FC<AlphabetteSubscriptionModalPr
                 <CreditCard className="w-4 h-4 text-amber-200" />
                 <span>
                   {selectedPlan === 'lgm_pilot_free'
-                    ? 'Activer le Pass 1ère Année 100% Gratuit (La Grande-Motte)'
+                    ? 'Activer ma 1ère année offerte (La Grande-Motte)'
                     : selectedPlan === 'byok_app' || selectedPlan === 'comfort_app'
                     ? 'Souscrire Application Unique ProxiLien (15 € / an)'
                     : selectedPlan === 'bouquet_byok' || selectedPlan === 'bouquet_integral'

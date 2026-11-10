@@ -252,7 +252,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="btn-header-alphabette-pricing"
               onClick={onOpenSubscriptionModal}
               className="bg-white/15 hover:bg-white/25 text-white border border-white/30 px-2 py-0.5 rounded flex items-center gap-1 font-bold text-[10px] sm:text-xs transition cursor-pointer"
-              title="Grille Tarifaire Officielle ALPHABETTE (39€/59€ & Bouquet 99€/199€)"
+              title="Tarifs Alphabette : 15 € / an pour une application, 40 € / an pour toutes"
             >
               <Building2 className="w-3 h-3 text-amber-300" />
               <span className="hidden md:inline">Tarifs & Bouquet Alphabette</span>

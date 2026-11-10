@@ -56,7 +56,7 @@ export const AlphabetteQuotaModal: React.FC<AlphabetteQuotaModalProps> = ({
           </div>
 
           <div className="text-xs text-stone-400 space-y-1 font-medium">
-            <p>💡 <strong>Rappel :</strong> L'accès est 100% offert et illimité pour les habitants de La Grande-Motte (avec géolocalisation validée).</p>
+            <p>💡 <strong>Rappel :</strong> La première année est offerte par Alphabette aux habitants de La Grande-Motte (avec géolocalisation validée).</p>
             <p>🔑 <strong>Mode BYOK :</strong> Vos clés personnelles (Mistral, Google, OpenAI, etc.) garantissent l'illimité sans bridage.</p>
           </div>
 

@@ -202,7 +202,7 @@ export function simulateLGMGeolocation(quartierName: string, forceOutside = fals
       quartier: 'Extérieur (Montpellier)',
       checkedAt: new Date().toISOString(),
       method: 'simulation',
-      error: `Position simulée hors La Grande-Motte (${distanceKm} km). Formules standards 39€/59€ applicables après 7 jours d'essai.`,
+      error: `Position simulée hors La Grande-Motte (${distanceKm} km). Tarifs prévus : 15 € / an pour ProxiLien, 40 € / an pour toutes les applications.`,
     };
 
     saveLGMGeoStatus(result);

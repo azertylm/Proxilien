@@ -274,7 +274,7 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
             <div className={`p-4 rounded-2xl border space-y-3 ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
               <div>
                 <span className="font-extrabold text-sm text-orange-600 dark:text-orange-400 block mb-1">
-                  2. Mode BYOK (Bring Your Own Key) · 39 € / an
+                  2. Avec votre propre clé IA
                 </span>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
                   Renseignez votre propre clé API Mistral pour consommer votre quota personnel chez Mistral AI en toute transparence.
@@ -349,7 +349,7 @@ export const SovereignStatusModal: React.FC<SovereignStatusModalProps> = ({
           {activeTab === 'managed' && (
             <div className={`p-4 rounded-2xl border ${isDark ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
               <span className="font-extrabold text-sm text-indigo-600 dark:text-indigo-400 block mb-1">
-                3. Mode Managé (Clé Alphabette incluse) · 59 € / an (ou Bouquet 199 €)
+                3. Tarifs prévus : 15 € / an pour ProxiLien, 40 € / an pour toutes les applications
               </span>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Vous n'avez pas besoin de créer de compte développeur ni de gérer des facturations d'API. Alphabette prend en charge la clé, l'infrastructure européenne et la maintenance continue.
