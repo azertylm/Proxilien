@@ -206,7 +206,7 @@ export const ToolReceiptModal: React.FC<ToolReceiptModalProps> = ({
             <div className="text-xs">
               <p className="font-black">Garantie Voisin de Confiance ProxiLien</p>
               <p className="text-emerald-800">
-                L'emprunteur s'engage moralement à restituer l'outil nettoyé et fonctionnel. En cas de pépin, le CCAS et ProxiLien accompagnent les deux voisins.
+                L'emprunteur s'engage moralement à restituer l'outil nettoyé et fonctionnel, à la date convenue entre voisins.
               </p>
             </div>
           </div>
@@ -214,7 +214,7 @@ export const ToolReceiptModal: React.FC<ToolReceiptModalProps> = ({
           {/* Toast message if SMS sent */}
           {smsSent && (
             <div className="bg-slate-900 text-white p-3 rounded-xl text-center text-xs font-bold animate-in fade-in">
-              📲 SMS de confirmation envoyé à {loan.borrowerPhone} et au prêteur !
+              ✅ Reçu enregistré sur cet appareil. Pensez à échanger vos numéros avec votre voisin.
             </div>
           )}
 

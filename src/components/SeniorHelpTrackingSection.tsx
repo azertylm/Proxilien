@@ -145,14 +145,14 @@ export const SeniorHelpTrackingSection: React.FC<SeniorHelpTrackingSectionProps>
                   </span>
                   <div className="min-w-0">
                     <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block truncate">
-                      Votre voisin veilleur
+                      Le voisin qui vous aide
                     </span>
                     <div className="font-black text-sm sm:text-base text-slate-900 dark:text-white">
-                      {req.helperName || 'Lucas Valentin'}
+                      {req.helperName || 'Un voisin'}
                     </div>
                     <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                       <UserCheck className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{req.helperRole || 'Jeune voisin certifié'}</span>
+                      <span className="truncate">{req.helperRole || 'Voisin'}</span>
                     </span>
                   </div>
                 </div>
@@ -222,7 +222,7 @@ export const SeniorHelpTrackingSection: React.FC<SeniorHelpTrackingSectionProps>
                 {req.title}
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 break-words leading-relaxed mt-0.5">
-                Diffusé aux voisins veilleurs de votre quartier.
+                Enregistrée sur cet appareil.
               </p>
             </div>
           </div>

@@ -191,8 +191,8 @@ export default function App() {
     };
     setActiveRequests([newReq, ...activeRequests]);
     showToast(
-      "Demande d'aide transmise !",
-      `Votre message a été diffusé aux voisins veilleurs de ${currentCity.name}.`
+      "Demande d'aide enregistrée",
+      `Elle est gardée sur cet appareil : montrez-la ou envoyez-la à un voisin de ${currentCity.name} pour qu'il vienne vous aider.`
     );
   };
 
@@ -204,7 +204,7 @@ export default function App() {
         helperName: 'Lucas Valentin (Vous)',
         helperRole: 'Bénévole certifié (21 ans)',
         helperAvatar: '🧑‍🎓',
-        helperPhone: '06 12 34 56 78',
+        helperPhone: '',
         estimatedArrivalTime: 'Dans 20 minutes',
         arrivalTransport: 'À pied (5 min)',
         arrivalNote: "J'arrive pour vous aider !"
@@ -227,7 +227,7 @@ export default function App() {
         helperName: 'Lucas Valentin (Vous)',
         helperRole: 'Bénévole certifié (21 ans)',
         helperAvatar: '🧑‍🎓',
-        helperPhone: arrivalData.helperPhone || '06 12 34 56 78',
+        helperPhone: arrivalData.helperPhone || '',
         estimatedArrivalTime: arrivalData.estimatedTime,
         arrivalTransport: arrivalData.transport,
         arrivalNote: arrivalData.arrivalNote,
@@ -290,7 +290,7 @@ export default function App() {
       estimatedTime: 'Dans 20 minutes (14h30)',
       transport: 'À vélo (5 min)',
       arrivalNote: "Bonjour ! J'ai vu votre demande et je passe vous donner un coup de main avec grand plaisir.",
-      helperPhone: '06 12 34 56 78',
+      helperPhone: '',
     });
   };
 

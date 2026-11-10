@@ -53,7 +53,7 @@ export const TVModeView: React.FC<TVModeViewProps> = ({
   const [selectedContactIdx, setSelectedContactIdx] = useState<number>(0);
 
   const TV_MENU_ITEMS = [
-    { id: 0, title: '🚨 SOS URGENCE', desc: 'Alerte immédiate à vos 3 voisins veilleurs', color: 'from-red-600 to-rose-700 ring-red-400' },
+    { id: 0, title: '🚨 SOS URGENCE', desc: 'Appeler les secours : 15, 112, 18, 17', color: 'from-red-600 to-rose-700 ring-red-400' },
     { id: 1, title: '🎤 PARLER & DEMANDER', desc: 'Dicter un besoin sans clavier (Courses, Panne)', color: 'from-orange-600 to-amber-600 ring-orange-400' },
     { id: 2, title: '🏘️ PLACE DU VILLAGE', desc: 'Voir les 50 initiatives d\'entraide de La Grande-Motte', color: 'from-indigo-700 to-violet-800 ring-indigo-400' },
     { id: 3, title: '📞 APPELER UN VOISIN', desc: 'Lucas, Marie ou le CCAS au téléphone', color: 'from-emerald-700 to-teal-800 ring-emerald-400' },

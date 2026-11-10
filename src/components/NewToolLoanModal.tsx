@@ -38,12 +38,12 @@ const POPULAR_TOOLS = [
   { name: 'Pompe à vélo avec manomètre', icon: '🚲', category: 'loisirs' as const },
 ];
 
-// Verified young neighbors in La Grande-Motte to pick in 1 tap
+// Exemples de prénoms pour remplir vite le reçu (aucun numéro : il pourrait appartenir à quelqu'un)
 const VERIFIED_NEIGHBORS = [
-  { name: 'Lucas V. (22 ans)', phone: '06 12 34 56 78', quartier: 'Le Couchant', avatar: '🧑' },
-  { name: 'Sarah B. (24 ans)', phone: '07 89 01 23 45', quartier: 'Point Zéro', avatar: '👩' },
-  { name: 'Emma R. (23 ans)', phone: '06 45 67 89 10', quartier: 'Le Port', avatar: '👩‍🎨' },
-  { name: 'Maxime D. (26 ans)', phone: '06 55 66 77 88', quartier: 'Ponant', avatar: '🧑‍🌾' },
+  { name: 'Lucas V. (22 ans)', phone: '', quartier: 'Le Couchant', avatar: '🧑' },
+  { name: 'Sarah B. (24 ans)', phone: '', quartier: 'Point Zéro', avatar: '👩' },
+  { name: 'Emma R. (23 ans)', phone: '', quartier: 'Le Port', avatar: '👩‍🎨' },
+  { name: 'Maxime D. (26 ans)', phone: '', quartier: 'Ponant', avatar: '🧑‍🌾' },
 ];
 
 // Return timeline presets
@@ -118,7 +118,7 @@ export const NewToolLoanModal: React.FC<NewToolLoanModalProps> = ({
       icon: isCustomTool ? '🧰' : selectedTool.icon,
       condition: toolCondition,
       lenderName: 'Jean P. (Vous)',
-      lenderPhone: '06 44 22 11 00',
+      lenderPhone: '',
       borrowerName: borrowerFinalName,
       borrowerPhone: borrowerFinalPhone,
       borrowerQuartier: borrowerFinalQuartier,
@@ -128,7 +128,7 @@ export const NewToolLoanModal: React.FC<NewToolLoanModalProps> = ({
       expectedReturnTime: selectedReturnPreset.time,
       status: 'en_cours',
       notes: notes.trim() || undefined,
-      trustGuarantee: 'Certifié ProxiLien Confiance · Voisins Veilleurs',
+      trustGuarantee: 'Prêt entre voisins (reçu gardé sur cet appareil)',
       receiptCode: randomCode,
       smsConfirmationSent: true,
     };
@@ -303,7 +303,7 @@ export const NewToolLoanModal: React.FC<NewToolLoanModalProps> = ({
                   À quel jeune voisin confiez-vous l'outil ?
                 </h3>
                 <p className="text-xs text-stone-600">
-                  Sélectionnez un veilleur certifié du quartier ou notez un autre prénom.
+                  Choisissez un exemple ou notez le prénom de votre voisin.
                 </p>
               </div>
 

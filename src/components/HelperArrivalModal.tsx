@@ -64,7 +64,7 @@ export const HelperArrivalModal: React.FC<HelperArrivalModalProps> = ({
   const [useCustomTime, setUseCustomTime] = useState<boolean>(false);
   const [selectedTransport, setSelectedTransport] = useState<string>('À pied (3-5 min)');
   const [arrivalNote, setArrivalNote] = useState<string>("Bonjour ! Je viens vous donner un coup de main avec grand plaisir.");
-  const [helperPhone, setHelperPhone] = useState<string>('06 12 34 56 78');
+  const [helperPhone, setHelperPhone] = useState<string>('');
 
   if (!isOpen || !request) return null;
 
