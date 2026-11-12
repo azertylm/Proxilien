@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserMode, TextSize, CityInfo, HelpRequest, Initiative, ThemeConfig, CommunityEvent, ToolLoan, HelpRequestStatus, CitizenAlert, DeviceMode } from './types';
 import { CITIES_DATA } from './data/cities';
 import { INITIAL_HELP_REQUESTS, INITIAL_COMMUNITY_EVENTS, INITIAL_TOOL_LOANS } from './data/mockData';
@@ -365,6 +365,26 @@ export default function App() {
       "Un SMS courtois a été adressé au jeune voisin avec les détails et la date convenue."
     );
   };
+
+  // Pont avec le bouton ☀️/🌙 de la double barre Alphabette : la barre règle jour / nuit,
+  // et si l'appli change de style d'elle-même (personnalisation), la barre suit.
+  const premierStyleRef = useRef(true);
+  useEffect(() => {
+    const enNuit = (id: string) => id === 'dark' || id === 'gold-dark';
+    const appliquer = (nuit: boolean) =>
+      setThemeConfig(prev => (enNuit(prev.themeId) === nuit ? prev : { ...prev, themeId: nuit ? 'dark' : 'gold-white' }));
+    const t0 = document.documentElement.dataset.abTheme;
+    if (t0) appliquer(t0 === 'nuit');
+    const deLaBarre = (ev: Event) => appliquer((ev as CustomEvent).detail === 'nuit');
+    window.addEventListener('alphabette:theme', deLaBarre);
+    return () => window.removeEventListener('alphabette:theme', deLaBarre);
+  }, []);
+  useEffect(() => {
+    if (premierStyleRef.current) { premierStyleRef.current = false; return; }
+    const voulu = (themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark') ? 'nuit' : 'jour';
+    const actuel = document.documentElement.dataset.abTheme;
+    if (actuel && actuel !== voulu) document.getElementById('ab-theme')?.click();
+  }, [themeConfig.themeId]);
 
   const handleQuickToggleTheme = () => {
     if (themeConfig.themeId === 'dark' || themeConfig.themeId === 'gold-dark') {

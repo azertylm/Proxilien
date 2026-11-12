@@ -413,33 +413,6 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden xl:inline">{isSpeaking ? 'Arrêter' : 'Écouter'}</span>
             </button>
 
-            {/* Text Size Cycle Button: BIG */}
-            <button
-              id="btn-toggle-text-size"
-              onClick={cycleTextSize}
-              className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-black transition cursor-pointer flex flex-col items-center justify-center min-w-[42px] ${
-                isDark 
-                  ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700' 
-                  : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
-              }`}
-              title={`BIG : Taille du texte (${
-                textSize === 'normal' ? 'Normal / Compact' :
-                textSize === 'large' ? 'Grand' :
-                textSize === 'xlarge' ? 'Très Grand' : 'Géant'
-              }). Cliquer pour agrandir.`}
-              aria-label="Agrandir la taille du texte : BIG"
-            >
-              <span className="text-orange-600 font-black tracking-wider leading-none text-xs sm:text-[13px]">
-                BIG
-              </span>
-              <div className="flex items-center gap-0.5 mt-0.5" aria-hidden="true">
-                <span className="w-1 h-1 rounded-full bg-orange-600" />
-                <span className={`w-1 h-1 rounded-full ${textSize === 'large' || textSize === 'xlarge' || textSize === 'giant' ? 'bg-orange-600' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                <span className={`w-1 h-1 rounded-full ${textSize === 'xlarge' || textSize === 'giant' ? 'bg-orange-600' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                <span className={`w-1 h-1 rounded-full ${textSize === 'giant' ? 'bg-orange-600' : 'bg-slate-300 dark:bg-slate-600'}`} />
-              </div>
-            </button>
-
             {/* Fullscreen Mode Button (visible sm+) */}
             {onToggleFullscreen && (
               <button
